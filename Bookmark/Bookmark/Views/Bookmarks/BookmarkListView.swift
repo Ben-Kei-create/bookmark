@@ -4,7 +4,6 @@ import CoreData
 struct BookmarkListView: View {
     @Environment(\.managedObjectContext) private var viewContext
 
-    // Always fetch by creation date; in-memory sort handles other orders
     @FetchRequest(
         sortDescriptors: [SortDescriptor(\.dateCreated, order: .reverse)],
         predicate: NSPredicate(format: "isArchived == false")
@@ -14,9 +13,10 @@ struct BookmarkListView: View {
     @State private var searchText = ""
     @State private var sortOption: BookmarkSortOption = .dateCreatedNewest
     @State private var showAddSheet = false
+    @State private var filterFavoritesOnly = false
 
     private var displayBookmarks: [BookmarkEntity] {
-        let filtered: [BookmarkEntity]
+        var filtered: [BookmarkEntity]
         if searchText.isEmpty {
             filtered = Array(allBookmarks)
         } else {
@@ -27,27 +27,74 @@ struct BookmarkListView: View {
                 || $0.url.lowercased().contains(query)
             }
         }
+
+        if filterFavoritesOnly {
+            filtered = filtered.filter { $0.isFavorite }
+        }
+
         return sorted(filtered)
+    }
+
+    private var groupedBookmarks: [(date: String, items: [BookmarkEntity])] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: today)!
+
+        var groups: [String: [BookmarkEntity]] = [:]
+
+        for bookmark in displayBookmarks {
+            let bookmarkDay = calendar.startOfDay(for: bookmark.dateCreated)
+            let key: String
+            if bookmarkDay == today {
+                key = AppStrings.today
+            } else if bookmarkDay == yesterday {
+                key = AppStrings.yesterday
+            } else {
+                key = AppStrings.earlier
+            }
+            if groups[key] == nil { groups[key] = [] }
+            groups[key]?.append(bookmark)
+        }
+
+        let order = [AppStrings.today, AppStrings.yesterday, AppStrings.earlier]
+        return order.compactMap { key in
+            guard let items = groups[key] else { return nil }
+            return (date: key, items: items)
+        }
     }
 
     var body: some View {
         NavigationStack {
-            Group {
-                if allBookmarks.isEmpty {
-                    EmptyStateView { showAddSheet = true }
-                } else if displayBookmarks.isEmpty {
-                    ContentUnavailableView.search(text: searchText)
-                } else {
-                    bookmarkList
+            ZStack {
+                AppTheme.Colors.paleBackground
+                    .ignoresSafeArea()
+
+                VStack(spacing: 0) {
+                    if !allBookmarks.isEmpty {
+                        filterChips
+                            .padding(.vertical, AppTheme.Spacing.md)
+                            .padding(.horizontal, AppTheme.Spacing.lg)
+                    }
+
+                    Group {
+                        if allBookmarks.isEmpty {
+                            EmptyStateView { showAddSheet = true }
+                        } else if displayBookmarks.isEmpty {
+                            ContentUnavailableView.search(text: searchText)
+                        } else {
+                            bookmarkList
+                        }
+                    }
                 }
             }
-            .navigationTitle("Bookmarks")
-            .searchable(text: $searchText, prompt: "Search bookmarks…")
+            .navigationTitle(AppStrings.bookmarks)
+            .searchable(text: $searchText, prompt: AppStrings.searchPlaceholder)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showAddSheet = true } label: {
                         Image(systemName: "plus")
                             .fontWeight(.semibold)
+                            .foregroundColor(AppTheme.Colors.primaryBlue)
                     }
                 }
                 ToolbarItem(placement: .topBarLeading) {
@@ -60,49 +107,57 @@ struct BookmarkListView: View {
         }
     }
 
-    // MARK: - List
+    private var filterChips: some View {
+        HStack(spacing: AppTheme.Spacing.sm) {
+            ForEach([
+                (label: AppStrings.all, isActive: !filterFavoritesOnly),
+                (label: AppStrings.favorites, isActive: filterFavoritesOnly)
+            ], id: \.label) { chip in
+                Button(action: {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        filterFavoritesOnly = chip.label == AppStrings.favorites
+                    }
+                }) {
+                    Text(chip.label)
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .padding(.horizontal, AppTheme.Spacing.md)
+                        .padding(.vertical, AppTheme.Spacing.sm)
+                        .background(chip.isActive ? AppTheme.Colors.primaryBlue : AppTheme.Colors.lightBlue)
+                        .foregroundColor(chip.isActive ? .white : AppTheme.Colors.primaryBlue)
+                        .clipShape(Capsule())
+                }
+            }
+
+            Spacer()
+        }
+    }
 
     private var bookmarkList: some View {
-        List {
-            ForEach(displayBookmarks) { bookmark in
-                NavigationLink {
-                    BookmarkDetailView(entity: bookmark)
-                } label: {
-                    BookmarkRow(entity: bookmark)
-                }
-                .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
-                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                    Button(role: .destructive) { delete(bookmark) } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
-                }
-                .swipeActions(edge: .leading) {
-                    Button { open(bookmark.url) } label: {
-                        Label("Open", systemImage: "safari")
-                    }
-                    .tint(.blue)
-                }
-                .contextMenu {
-                    Button { open(bookmark.url) } label: {
-                        Label("Open in Safari", systemImage: "safari")
-                    }
-                    Button { ClipboardService.copyToClipboard(bookmark.url) } label: {
-                        Label("Copy URL", systemImage: "doc.on.doc")
-                    }
-                    Divider()
-                    Button(role: .destructive) { delete(bookmark) } label: {
-                        Label("Delete", systemImage: "trash")
+        ScrollView {
+            VStack(spacing: AppTheme.Spacing.lg) {
+                ForEach(groupedBookmarks, id: \.date) { group in
+                    VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+                        Text(group.date)
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(AppTheme.Colors.textSecondary)
+                            .padding(.horizontal, AppTheme.Spacing.lg)
+
+                        ForEach(group.items) { bookmark in
+                            NavigationLink {
+                                BookmarkDetailView(entity: bookmark)
+                            } label: {
+                                BookmarkRow(entity: bookmark)
+                            }
+                            .padding(.horizontal, AppTheme.Spacing.lg)
+                        }
                     }
                 }
             }
+            .padding(.vertical, AppTheme.Spacing.lg)
         }
-        .listStyle(.plain)
-        .animation(.easeInOut(duration: 0.2), value: displayBookmarks.map(\.objectID))
     }
-
-    // MARK: - Sort Menu
 
     private var sortMenu: some View {
         Menu {
@@ -122,10 +177,9 @@ struct BookmarkListView: View {
         } label: {
             Image(systemName: "arrow.up.arrow.down")
                 .fontWeight(.medium)
+                .foregroundColor(AppTheme.Colors.primaryBlue)
         }
     }
-
-    // MARK: - Helpers
 
     private func sorted(_ bookmarks: [BookmarkEntity]) -> [BookmarkEntity] {
         switch sortOption {

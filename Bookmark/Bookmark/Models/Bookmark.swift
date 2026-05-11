@@ -10,6 +10,7 @@ public class BookmarkEntity: NSManagedObject, Identifiable {
     @NSManaged public var dateCreated: Date
     @NSManaged public var lastModified: Date
     @NSManaged public var isArchived: Bool
+    @NSManaged public var isFavorite: Bool
 }
 
 extension BookmarkEntity {
@@ -31,7 +32,14 @@ extension BookmarkEntity {
         entity.dateCreated = Date()
         entity.lastModified = Date()
         entity.isArchived = false
+        entity.isFavorite = false
         return entity
+    }
+
+    func toggleFavorite(in context: NSManagedObjectContext) throws {
+        isFavorite.toggle()
+        lastModified = Date()
+        try context.save()
     }
 
     func softDelete(in context: NSManagedObjectContext) throws {
