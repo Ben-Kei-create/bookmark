@@ -1,43 +1,40 @@
 import Foundation
+import UIKit
 
-class URLValidator {
+struct URLValidator {
     static func isValidURL(_ string: String) -> Bool {
-        let urlString = string.trimmingCharacters(in: .whitespaces)
-        guard !urlString.isEmpty else { return false }
+        let trimmed = string.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return false }
 
-        var urlToValidate = urlString
-        if !urlToValidate.lowercased().hasPrefix("http://") && !urlToValidate.lowercased().hasPrefix("https://") {
-            urlToValidate = "https://" + urlToValidate
+        var urlString = trimmed
+        if !urlString.lowercased().hasPrefix("http://") && !urlString.lowercased().hasPrefix("https://") {
+            urlString = "https://" + urlString
         }
 
-        guard let url = URL(string: urlToValidate) else { return false }
+        guard let url = URL(string: urlString) else { return false }
         return url.host != nil
     }
 
     static func normalizeURL(_ string: String) -> String {
         let trimmed = string.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty else { return "" }
-
         if trimmed.lowercased().hasPrefix("http://") || trimmed.lowercased().hasPrefix("https://") {
             return trimmed
         }
         return "https://" + trimmed
     }
 
-    static func extractDomain(from url: String) -> String {
-        if let url = URL(string: url), let host = url.host {
-            return host.replacingOccurrences(of: "www.", with: "")
-        }
-        return ""
+    static func extractDomain(from urlString: String) -> String {
+        guard let url = URL(string: urlString), let host = url.host else { return urlString }
+        return host.replacingOccurrences(of: "www.", with: "", options: .anchored)
     }
 }
 
-class ClipboardService {
+struct ClipboardService {
     static func copyToClipboard(_ text: String) {
         UIPasteboard.general.string = text
     }
 
     static func getFromClipboard() -> String? {
-        return UIPasteboard.general.string
+        UIPasteboard.general.string
     }
 }

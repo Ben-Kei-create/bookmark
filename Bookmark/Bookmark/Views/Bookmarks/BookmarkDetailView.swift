@@ -2,148 +2,212 @@ import SwiftUI
 
 struct BookmarkDetailView: View {
     @Environment(\.managedObjectContext) private var viewContext
-    @Environment(\.dismiss) var dismiss
-    @StateObject private var viewModel: BookmarkDetailViewModel
-    @State private var showEditSheet = false
-    @State private var showDeleteConfirmation = false
-    @State private var showCopiedMessage = false
-    @State private var isDeleting = false
+    @Environment(\.dismiss) private var dismiss
 
-    init(bookmark: Bookmark) {
-        let context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
-        _viewModel = StateObject(
-            wrappedValue: BookmarkDetailViewModel(bookmark: bookmark, context: context)
+    @ObservedObject var entity: BookmarkEntity
+
+    @State private var showEditSheet = false
+    @State private var showDeleteAlert = false
+    @State private var showShareSheet = false
+    @State private var urlCopied = false
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                headerSection
+                    .padding(.top, 4)
+
+                if !entity.descriptionText.isEmpty {
+                    descriptionSection
+                }
+
+                actionButtons
+                    .padding(.top, 4)
+
+                metaSection
+            }
+            .padding()
+        }
+        .navigationTitle("")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button { showEditSheet = true } label: {
+                        Label("Edit", systemImage: "pencil")
+                    }
+                    Button { showShareSheet = true } label: {
+                        Label("Share", systemImage: "square.and.arrow.up")
+                    }
+                    Divider()
+                    Button(role: .destructive) { showDeleteAlert = true } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+            }
+        }
+        .sheet(isPresented: $showEditSheet) {
+            BookmarkFormView(editing: entity)
+        }
+        .sheet(isPresented: $showShareSheet) {
+            ShareSheet(activityItems: [entity.url])
+                .presentationDetents([.medium, .large])
+        }
+        .alert("Delete Bookmark?", isPresented: $showDeleteAlert) {
+            Button("Delete", role: .destructive) { deleteAndDismiss() }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text(""\(entity.title)" will be removed.")
+        }
+    }
+
+    // MARK: - Sections
+
+    private var headerSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(entity.title)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(.primary)
+
+            Button { openInSafari() } label: {
+                HStack(spacing: 4) {
+                    Text(URLValidator.extractDomain(from: entity.url))
+                        .font(.subheadline)
+                    Image(systemName: "arrow.up.right.square")
+                        .font(.caption)
+                }
+                .foregroundColor(.accentColor)
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private var descriptionSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label("Notes", systemImage: "text.alignleft")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            Text(entity.descriptionText)
+                .font(.body)
+                .foregroundColor(.primary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color(.secondarySystemGroupedBackground))
         )
     }
 
-    var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 20) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Title")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+    private var actionButtons: some View {
+        VStack(spacing: 10) {
+            Button(action: openInSafari) {
+                Label("Open in Safari", systemImage: "safari.fill")
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+            }
+            .buttonStyle(PrimaryButtonStyle())
 
-                        Text(viewModel.bookmark.title)
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                    }
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("URL")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-
-                        Text(viewModel.bookmark.url)
-                            .font(.body)
-                            .foregroundColor(.blue)
-                            .lineLimit(3)
-                            .truncationMode(.tail)
-                    }
-
-                    if !viewModel.bookmark.description.isEmpty {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Description")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-
-                            Text(viewModel.bookmark.description)
-                                .font(.body)
-                                .lineLimit(nil)
-                        }
-                    }
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Created")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-
-                        Text(viewModel.bookmark.dateCreated.formatted(date: .abbreviated, time: .shortened))
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                    }
-
-                    Spacer()
-
-                    VStack(spacing: 12) {
-                        Button(action: {
-                            viewModel.openURL()
-                        }) {
-                            Label("Open in Safari", systemImage: "safari")
-                                .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.borderedProminent)
-
-                        Button(action: {
-                            viewModel.copyURLToPasteboard()
-                            showCopiedMessage = true
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                showCopiedMessage = false
-                            }
-                        }) {
-                            Label(
-                                showCopiedMessage ? "Copied!" : "Copy URL",
-                                systemImage: showCopiedMessage ? "checkmark" : "doc.on.doc"
-                            )
-                            .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.bordered)
-
-                        Button(action: { showEditSheet = true }) {
-                            Label("Edit", systemImage: "pencil")
-                                .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.bordered)
-
-                        Button(role: .destructive, action: { showDeleteConfirmation = true }) {
-                            Label("Delete", systemImage: "trash")
-                                .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.bordered)
-                    }
+            HStack(spacing: 10) {
+                Button(action: copyURL) {
+                    Label(urlCopied ? "Copied!" : "Copy URL",
+                          systemImage: urlCopied ? "checkmark" : "doc.on.doc")
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
                 }
-                .padding()
+                .buttonStyle(SecondaryButtonStyle())
+                .animation(.easeInOut(duration: 0.15), value: urlCopied)
+
+                Button { showShareSheet = true } label: {
+                    Label("Share", systemImage: "square.and.arrow.up")
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                }
+                .buttonStyle(SecondaryButtonStyle())
             }
-            .navigationTitle("Bookmark")
-            .navigationBarTitleDisplayMode(.inline)
-        }
-        .sheet(isPresented: $showEditSheet) {
-            BookmarkFormView(editing: viewModel.bookmark, onSave: {
-                // Refresh from DB if needed
-                showEditSheet = false
-            })
-            .environment(\.managedObjectContext, viewContext)
-        }
-        .alert("Delete Bookmark?", isPresented: $showDeleteConfirmation) {
-            Button("Delete", role: .destructive) {
-                deleteBookmark()
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("This action cannot be undone.")
         }
     }
 
-    private func deleteBookmark() {
-        isDeleting = true
-        Task {
-            do {
-                try await viewModel.deleteBookmark()
-                dismiss()
-            } catch {
-                isDeleting = false
+    private var metaSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Added \(entity.dateCreated.formatted(date: .long, time: .shortened))")
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            if entity.lastModified.timeIntervalSince(entity.dateCreated) > 5 {
+                Text("Edited \(entity.lastModified.formatted(date: .long, time: .shortened))")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, 8)
+    }
+
+    // MARK: - Actions
+
+    private func openInSafari() {
+        guard let url = URL(string: entity.url) else { return }
+        UIApplication.shared.open(url)
+    }
+
+    private func copyURL() {
+        ClipboardService.copyToClipboard(entity.url)
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        urlCopied = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) { urlCopied = false }
+    }
+
+    private func deleteAndDismiss() {
+        try? BookmarkService.delete(entity, in: viewContext)
+        dismiss()
     }
 }
 
+// MARK: - Button Styles
+
+struct PrimaryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .fontWeight(.semibold)
+            .background(Color.accentColor.opacity(configuration.isPressed ? 0.8 : 1))
+            .foregroundColor(.white)
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .scaleEffect(configuration.isPressed ? 0.98 : 1)
+    }
+}
+
+struct SecondaryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(Color(.secondarySystemGroupedBackground).opacity(configuration.isPressed ? 0.7 : 1))
+            .foregroundColor(.primary)
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .scaleEffect(configuration.isPressed ? 0.98 : 1)
+    }
+}
+
+// MARK: - Share Sheet
+
+struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uvc: UIActivityViewController, context: Context) {}
+}
+
 #Preview {
-    BookmarkDetailView(
-        bookmark: Bookmark(
-            url: "https://www.apple.com",
-            title: "Apple",
-            description: "Apple's official website"
-        )
-    )
+    NavigationStack {
+        let context = PersistenceController.preview.container.viewContext
+        let entity = (try! context.fetch(BookmarkEntity.fetchRequest())).first!
+        BookmarkDetailView(entity: entity)
+            .environment(\.managedObjectContext, context)
+    }
 }

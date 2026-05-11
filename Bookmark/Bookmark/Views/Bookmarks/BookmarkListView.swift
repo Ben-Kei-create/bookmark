@@ -2,91 +2,149 @@ import SwiftUI
 
 struct BookmarkListView: View {
     @Environment(\.managedObjectContext) private var viewContext
-    @StateObject private var viewModel: BookmarkListViewModel
-    @State private var showAddSheet = false
-    @State private var selectedBookmark: Bookmark?
 
-    init() {
-        let context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
-        _viewModel = StateObject(wrappedValue: BookmarkListViewModel(context: context))
+    // Always fetch by creation date; in-memory sort handles other orders
+    @FetchRequest(
+        sortDescriptors: [SortDescriptor(\.dateCreated, order: .reverse)],
+        predicate: NSPredicate(format: "isArchived == false")
+    )
+    private var allBookmarks: FetchedResults<BookmarkEntity>
+
+    @State private var searchText = ""
+    @State private var sortOption: BookmarkSortOption = .dateCreatedNewest
+    @State private var showAddSheet = false
+
+    private var displayBookmarks: [BookmarkEntity] {
+        let filtered: [BookmarkEntity]
+        if searchText.isEmpty {
+            filtered = Array(allBookmarks)
+        } else {
+            let query = searchText.lowercased()
+            filtered = allBookmarks.filter {
+                $0.title.lowercased().contains(query)
+                || $0.descriptionText.lowercased().contains(query)
+                || $0.url.lowercased().contains(query)
+            }
+        }
+        return sorted(filtered)
     }
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                if viewModel.bookmarks.isEmpty {
-                    EmptyStateView(action: { showAddSheet = true })
+            Group {
+                if allBookmarks.isEmpty {
+                    EmptyStateView { showAddSheet = true }
+                } else if displayBookmarks.isEmpty {
+                    ContentUnavailableView.search(text: searchText)
                 } else {
-                    bookmarksList
-                }
-
-                if viewModel.isLoading {
-                    ProgressView()
+                    bookmarkList
                 }
             }
             .navigationTitle("Bookmarks")
+            .searchable(text: $searchText, prompt: "Search bookmarks…")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: { showAddSheet = true }) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title2)
+                    Button { showAddSheet = true } label: {
+                        Image(systemName: "plus")
+                            .fontWeight(.semibold)
                     }
                 }
-
                 ToolbarItem(placement: .topBarLeading) {
-                    Menu {
-                        Picker("Sort By", selection: $viewModel.sortOption) {
-                            ForEach(BookmarkSortOption.allCases, id: \.self) { option in
-                                Label(option.rawValue, systemImage: "arrow.up.arrow.down")
-                                    .tag(option)
-                            }
-                        }
-                        .onChange(of: viewModel.sortOption) { _, newOption in
-                            viewModel.updateSortOption(newOption)
-                        }
-                    } label: {
-                        Image(systemName: "arrow.up.arrow.down")
-                    }
+                    sortMenu
                 }
-            }
-            .searchable(
-                text: $viewModel.searchText,
-                prompt: "Search bookmarks"
-            )
-            .onChange(of: viewModel.searchText) { _, _ in
-                viewModel.fetchBookmarks()
             }
             .sheet(isPresented: $showAddSheet) {
-                BookmarkFormView(onSave: {
-                    viewModel.fetchBookmarks()
-                    showAddSheet = false
-                })
-                .environment(\.managedObjectContext, viewContext)
-            }
-            .alert("Error", isPresented: .constant(viewModel.errorMessage != nil)) {
-                Button("OK") { viewModel.errorMessage = nil }
-            } message: {
-                Text(viewModel.errorMessage ?? "An error occurred")
+                BookmarkFormView()
             }
         }
     }
 
-    private var bookmarksList: some View {
+    // MARK: - List
+
+    private var bookmarkList: some View {
         List {
-            ForEach(viewModel.bookmarks) { bookmark in
-                NavigationLink(destination: BookmarkDetailView(bookmark: bookmark)) {
-                    BookmarkRow(bookmark: bookmark)
+            ForEach(displayBookmarks) { bookmark in
+                NavigationLink {
+                    BookmarkDetailView(entity: bookmark)
+                } label: {
+                    BookmarkRow(entity: bookmark)
                 }
-                .swipeActions(edge: .trailing) {
-                    Button(role: .destructive) {
-                        viewModel.deleteBookmark(bookmark)
-                    } label: {
+                .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                    Button(role: .destructive) { delete(bookmark) } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                }
+                .swipeActions(edge: .leading) {
+                    Button { open(bookmark.url) } label: {
+                        Label("Open", systemImage: "safari")
+                    }
+                    .tint(.blue)
+                }
+                .contextMenu {
+                    Button { open(bookmark.url) } label: {
+                        Label("Open in Safari", systemImage: "safari")
+                    }
+                    Button { ClipboardService.copyToClipboard(bookmark.url) } label: {
+                        Label("Copy URL", systemImage: "doc.on.doc")
+                    }
+                    Divider()
+                    Button(role: .destructive) { delete(bookmark) } label: {
                         Label("Delete", systemImage: "trash")
                     }
                 }
             }
         }
         .listStyle(.plain)
+        .animation(.easeInOut(duration: 0.2), value: displayBookmarks.map(\.objectID))
+    }
+
+    // MARK: - Sort Menu
+
+    private var sortMenu: some View {
+        Menu {
+            ForEach(BookmarkSortOption.allCases) { option in
+                Button {
+                    withAnimation(.easeInOut) { sortOption = option }
+                } label: {
+                    HStack {
+                        Label(option.rawValue, systemImage: option.icon)
+                        if sortOption == option {
+                            Spacer()
+                            Image(systemName: "checkmark")
+                        }
+                    }
+                }
+            }
+        } label: {
+            Image(systemName: "arrow.up.arrow.down")
+                .fontWeight(.medium)
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func sorted(_ bookmarks: [BookmarkEntity]) -> [BookmarkEntity] {
+        switch sortOption {
+        case .dateCreatedNewest: return bookmarks.sorted { $0.dateCreated > $1.dateCreated }
+        case .dateCreatedOldest: return bookmarks.sorted { $0.dateCreated < $1.dateCreated }
+        case .alphabetical: return bookmarks.sorted { $0.title.lowercased() < $1.title.lowercased() }
+        case .lastModified: return bookmarks.sorted { $0.lastModified > $1.lastModified }
+        }
+    }
+
+    private func delete(_ entity: BookmarkEntity) {
+        withAnimation {
+            try? BookmarkService.delete(entity, in: viewContext)
+        }
+    }
+
+    private func open(_ urlString: String) {
+        if let url = URL(string: urlString) {
+            UIApplication.shared.open(url)
+        }
     }
 }
 

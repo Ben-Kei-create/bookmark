@@ -1,83 +1,78 @@
 import CoreData
 import Foundation
-import Combine
 
+@MainActor
 class BookmarkFormViewModel: ObservableObject {
     @Published var url = ""
     @Published var title = ""
     @Published var description = ""
     @Published var urlError: String?
     @Published var isSaving = false
-    @Published var formError: String?
+    @Published var saveError: String?
 
-    private let bookmarkService = BookmarkService.shared
-    private let context: NSManagedObjectContext
-    var editingBookmark: Bookmark?
+    let editingEntity: BookmarkEntity?
 
-    init(context: NSManagedObjectContext, editing bookmark: Bookmark? = nil) {
-        self.context = context
-        self.editingBookmark = bookmark
-
-        if let bookmark = bookmark {
-            self.url = bookmark.url
-            self.title = bookmark.title
-            self.description = bookmark.description
+    init(editing entity: BookmarkEntity? = nil) {
+        self.editingEntity = entity
+        if let entity = entity {
+            url = entity.url
+            title = entity.title
+            description = entity.descriptionText
         }
     }
 
     var isFormValid: Bool {
-        let urlValid = URLValidator.isValidURL(url)
-        let titleValid = !title.trimmingCharacters(in: .whitespaces).isEmpty
-        return urlValid && titleValid
+        URLValidator.isValidURL(url)
+    }
+
+    // Suggested title from domain when title is empty
+    var titlePlaceholder: String {
+        guard url.trimmingCharacters(in: .whitespaces).isEmpty == false,
+              URLValidator.isValidURL(url) else { return "Title" }
+        let domain = URLValidator.extractDomain(from: URLValidator.normalizeURL(url))
+        return domain.isEmpty ? "Title" : domain
     }
 
     func validateURL() {
         let trimmed = url.trimmingCharacters(in: .whitespaces)
         if trimmed.isEmpty {
-            urlError = "URL is required"
+            urlError = nil
         } else if !URLValidator.isValidURL(trimmed) {
-            urlError = "Invalid URL format"
+            urlError = "Enter a valid URL (e.g. apple.com)"
         } else {
             urlError = nil
         }
     }
 
-    func save() async throws {
+    func save(in context: NSManagedObjectContext) async throws {
         isSaving = true
         defer { isSaving = false }
 
-        validateURL()
-        guard urlError == nil else {
-            throw BookmarkServiceError.invalidURL
-        }
-
-        let normalizedURL = URLValidator.normalizeURL(url)
-        let bookmarkTitle = title.trimmingCharacters(in: .whitespaces).isEmpty
-            ? URLValidator.extractDomain(from: normalizedURL)
-            : title
-
-        if let editingBookmark = editingBookmark {
-            _ = try bookmarkService.updateBookmark(
-                editingBookmark,
-                title: bookmarkTitle,
+        if let entity = editingEntity {
+            try BookmarkService.update(
+                entity,
+                title: title.trimmingCharacters(in: .whitespaces),
                 description: description,
                 in: context
             )
         } else {
-            _ = try bookmarkService.createBookmark(
-                url: normalizedURL,
-                title: bookmarkTitle,
+            try BookmarkService.create(
+                url: url,
+                title: title,
                 description: description,
                 in: context
             )
         }
     }
 
-    func reset() {
-        url = ""
-        title = ""
-        description = ""
-        urlError = nil
-        formError = nil
+    func pasteFromClipboard() {
+        if let pasted = ClipboardService.getFromClipboard(),
+           URLValidator.isValidURL(pasted) {
+            url = pasted
+            validateURL()
+            if title.isEmpty {
+                title = URLValidator.extractDomain(from: URLValidator.normalizeURL(pasted))
+            }
+        }
     }
 }

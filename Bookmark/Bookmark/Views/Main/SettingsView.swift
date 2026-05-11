@@ -1,38 +1,36 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @State private var selectedSort = BookmarkSortOption.dateCreatedNewest
-    @AppStorage("bookmarkSortOption") var sortOptionKey: String = BookmarkSortOption.dateCreatedNewest.rawValue
+    @AppStorage("defaultSortOption") private var defaultSortKey = BookmarkSortOption.dateCreatedNewest.rawValue
 
     var body: some View {
         NavigationStack {
             Form {
-                Section("Sort Options") {
-                    Picker("Default Sort", selection: $sortOptionKey) {
-                        ForEach(BookmarkSortOption.allCases, id: \.self) { option in
-                            Text(option.rawValue).tag(option.rawValue)
+                Section {
+                    Picker("Default Sort", selection: $defaultSortKey) {
+                        ForEach(BookmarkSortOption.allCases) { option in
+                            Label(option.rawValue, systemImage: option.icon).tag(option.rawValue)
                         }
                     }
-                    .onChange(of: sortOptionKey) { _, newValue in
-                        UserDefaults.standard.set(newValue, forKey: "bookmarkSortOption")
-                    }
+                } header: {
+                    Text("Preferences")
                 }
 
-                Section("About") {
+                Section {
                     HStack {
                         Text("Version")
                         Spacer()
-                        Text("1.0.0")
-                            .foregroundColor(.gray)
+                        Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0")
+                            .foregroundColor(.secondary)
                     }
-                }
 
-                Section("Support") {
-                    if let email = URL(string: "mailto:support@example.com") {
-                        Link(destination: email) {
-                            Text("Contact Support")
+                    if let url = URL(string: "mailto:support@example.com") {
+                        Link(destination: url) {
+                            Label("Contact Support", systemImage: "envelope")
                         }
                     }
+                } header: {
+                    Text("About")
                 }
             }
             .navigationTitle("Settings")
