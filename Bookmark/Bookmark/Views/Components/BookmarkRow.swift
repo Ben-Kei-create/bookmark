@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreData
 
 struct BookmarkRow: View {
     let entity: BookmarkEntity
