@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 
 enum BookmarkSortOption: String, CaseIterable, Identifiable {
     case dateCreatedNewest = "Newest First"
