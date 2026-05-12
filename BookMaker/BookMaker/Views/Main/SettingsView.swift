@@ -49,10 +49,10 @@ struct SettingsView: View {
             }
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("Bookmark")
+                Text("BookMaker")
                     .font(AppTheme.Typography.title3(weight: .bold))
                     .foregroundColor(AppTheme.Colors.textPrimary)
-                Text("Your private bookmark manager")
+                Text(AppStrings.appSubtitle)
                     .font(AppTheme.Typography.caption())
                     .foregroundColor(AppTheme.Colors.textSecondary)
             }

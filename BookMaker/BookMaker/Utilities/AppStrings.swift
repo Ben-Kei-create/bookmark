@@ -5,6 +5,10 @@ struct AppStrings {
 
     static var isJapanese: Bool { appLanguage == "ja" }
 
+    // MARK: - App
+    static var appName: String { "BookMaker" }
+    static var appSubtitle: String { isJapanese ? "あなたのプライベートブックマークマネージャー" : "Your private bookmark manager" }
+
     // MARK: - Tabs
     static var bookmarks: String { isJapanese ? "BookMarks" : "BookMarks" }
     static var settings: String { isJapanese ? "設定" : "Settings" }
