@@ -66,7 +66,7 @@ struct AppStrings {
     static var displayStyle: String { isJapanese ? "表示スタイル" : "Display Style" }
     static var listStyle: String { isJapanese ? "リスト" : "List" }
     static var gridStyle: String { isJapanese ? "アイコングリッド" : "Icon Grid" }
-    static var languageLabel: String { isJapanese ? "言語" : "Language" }
+    static var languageLabel: String { isJapanese ? "外観" : "Appearance" }
     static var english: String { "English" }
     static var japanese: String { "日本語" }
     static var about: String { isJapanese ? "について" : "About" }
