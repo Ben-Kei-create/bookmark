@@ -184,7 +184,7 @@ struct BookmarkListView: View {
                 Button {
                     withAnimation { sortOption = option }
                 } label: {
-                    Label(option.rawValue, systemImage: option.icon)
+                    Label(option.displayName, systemImage: option.icon)
                     if sortOption == option {
                         Image(systemName: "checkmark")
                     }

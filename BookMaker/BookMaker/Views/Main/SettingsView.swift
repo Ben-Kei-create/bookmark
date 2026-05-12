@@ -71,7 +71,7 @@ struct SettingsView: View {
                     icon: "arrow.up.arrow.down", iconColor: AppTheme.Colors.primaryBlue,
                     label: AppStrings.defaultSort,
                     selection: $defaultSortKey,
-                    options: BookmarkSortOption.allCases.map { ($0.rawValue, $0.rawValue) }
+                    options: BookmarkSortOption.allCases.map { ($0.displayName, $0.rawValue) }
                 )
                 SettingsDivider()
                 settingsPickerRow(
