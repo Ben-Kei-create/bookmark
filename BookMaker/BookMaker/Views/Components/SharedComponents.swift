@@ -69,7 +69,7 @@ struct SearchBarView: View {
             }
             .padding(.horizontal, AppTheme.Spacing.md)
             .padding(.vertical, AppTheme.Spacing.sm + 2)
-            .background(Color.white)
+            .background(AppTheme.Colors.cardBackground)
             .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
             .shadow(color: Color.black.opacity(0.05), radius: 6, x: 0, y: 2)
 
@@ -79,7 +79,7 @@ struct SearchBarView: View {
                         .font(.system(size: 15, weight: .medium))
                         .foregroundColor(AppTheme.Colors.primaryBlue)
                         .frame(width: 42, height: 42)
-                        .background(Color.white)
+                        .background(AppTheme.Colors.cardBackground)
                         .clipShape(Circle())
                         .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 2)
                 }
@@ -106,13 +106,13 @@ struct FilterChip: View {
                 .background(
                     isSelected
                         ? AnyShapeStyle(AppTheme.Colors.primaryBlue)
-                        : AnyShapeStyle(Color.white)
+                        : AnyShapeStyle(AppTheme.Colors.cardBackground)
                 )
                 .clipShape(Capsule())
                 .overlay(
                     Capsule().stroke(
                         isSelected ? Color.clear : AppTheme.Colors.divider,
-                        lineWidth: 1
+                        lineWidth: 1.5
                     )
                 )
                 .shadow(
@@ -165,7 +165,7 @@ struct FormCard<Content: View>: View {
     var body: some View {
         content
             .padding(AppTheme.Spacing.md)
-            .background(Color.white)
+            .background(AppTheme.Colors.cardBackground)
             .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
             .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
     }
@@ -237,7 +237,7 @@ struct DomainIconView: View {
             case .success(let image):
                 ZStack {
                     RoundedRectangle(cornerRadius: size * 0.26, style: .continuous)
-                        .fill(Color.white)
+                        .fill(AppTheme.Colors.cardBackground)
                         .frame(width: size, height: size)
                         .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 1)
                     image
@@ -287,7 +287,7 @@ struct BookmarkGridCell: View {
                 case .success(let image):
                     ZStack {
                         RoundedRectangle(cornerRadius: size * 0.22, style: .continuous)
-                            .fill(Color.white)
+                            .fill(AppTheme.Colors.cardBackground)
                             .shadow(color: Color.black.opacity(0.10), radius: 6, x: 0, y: 2)
                         image
                             .resizable()
