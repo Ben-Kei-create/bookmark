@@ -227,22 +227,42 @@ struct DomainIconView: View {
         String(domain.prefix(1)).uppercased()
     }
 
-    var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: size * 0.26, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [AppTheme.Colors.primaryBlue, AppTheme.Colors.deepBlue],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: size, height: size)
+    private var faviconURL: URL? {
+        URL(string: "https://www.google.com/s2/favicons?domain=\(domain)&sz=128")
+    }
 
-            Text(initial)
-                .font(.system(size: size * 0.40, weight: .bold, design: .default))
-                .foregroundColor(.white)
+    var body: some View {
+        AsyncImage(url: faviconURL) { phase in
+            switch phase {
+            case .success(let image):
+                ZStack {
+                    RoundedRectangle(cornerRadius: size * 0.26, style: .continuous)
+                        .fill(Color.white)
+                        .frame(width: size, height: size)
+                        .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 1)
+                    image
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: size * 0.65, height: size * 0.65)
+                }
+            default:
+                ZStack {
+                    RoundedRectangle(cornerRadius: size * 0.26, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [AppTheme.Colors.primaryBlue, AppTheme.Colors.deepBlue],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: size, height: size)
+                    Text(initial)
+                        .font(.system(size: size * 0.40, weight: .bold, design: .default))
+                        .foregroundColor(.white)
+                }
+            }
         }
+        .frame(width: size, height: size)
     }
 }
 
