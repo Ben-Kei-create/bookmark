@@ -3,6 +3,7 @@ import CoreData
 
 struct ContentView: View {
     @State private var selectedTab: AppTab = .bookmarks
+    @AppStorage("colorScheme") private var colorScheme = "system"
 
     enum AppTab: CaseIterable {
         case bookmarks, settings
@@ -24,7 +25,6 @@ struct ContentView: View {
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            // Content
             Group {
                 switch selectedTab {
                 case .bookmarks: BookmarkListView()
@@ -33,10 +33,18 @@ struct ContentView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            // Floating Tab Bar
             floatingTabBar
         }
         .ignoresSafeArea(edges: .bottom)
+        .preferredColorScheme(preferredScheme)
+    }
+
+    private var preferredScheme: ColorScheme? {
+        switch colorScheme {
+        case "dark":  return .dark
+        case "light": return .light
+        default:      return nil
+        }
     }
 
     // MARK: - Tab Bar
@@ -50,8 +58,8 @@ struct ContentView: View {
         .padding(6)
         .background(
             Capsule()
-                .fill(Color.white)
-                .shadow(color: Color.black.opacity(0.10), radius: 20, x: 0, y: 8)
+                .fill(AppTheme.Colors.cardBackground)
+                .shadow(color: Color.black.opacity(0.12), radius: 20, x: 0, y: 8)
         )
         .padding(.horizontal, 48)
         .padding(.bottom, 28)

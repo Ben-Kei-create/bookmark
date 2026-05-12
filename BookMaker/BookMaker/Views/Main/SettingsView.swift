@@ -1,9 +1,9 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @AppStorage("defaultSortOption") private var defaultSortKey = BookmarkSortOption.dateCreatedNewest.rawValue
     @AppStorage("appLanguage") private var appLanguage = "en"
     @AppStorage("bookmarkLayout") private var bookmarkLayout = "list"
+    @AppStorage("colorScheme") private var colorScheme = "system"
     @State private var showClearAlert = false
     @State private var openLinksIn = "Safari"
 
@@ -69,13 +69,6 @@ struct SettingsView: View {
         SettingsGroupCard(title: AppStrings.generalSection) {
             VStack(spacing: 0) {
                 settingsPickerRow(
-                    icon: "arrow.up.arrow.down", iconColor: AppTheme.Colors.primaryBlue,
-                    label: AppStrings.defaultSort,
-                    selection: $defaultSortKey,
-                    options: BookmarkSortOption.allCases.map { ($0.displayName, $0.rawValue) }
-                )
-                SettingsDivider()
-                settingsPickerRow(
                     icon: "square.grid.2x2", iconColor: Color.purple,
                     label: AppStrings.displayStyle,
                     selection: $bookmarkLayout,
@@ -96,22 +89,56 @@ struct SettingsView: View {
 
     private var appearanceSection: some View {
         SettingsGroupCard(title: AppStrings.appearanceSection) {
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                HStack {
-                    SettingsIcon(name: "globe", color: AppTheme.Colors.deepBlue)
-                    Text(AppStrings.languageLabel)
-                        .font(AppTheme.Typography.subheadline(weight: .medium))
-                        .foregroundColor(AppTheme.Colors.textPrimary)
-                    Spacer()
-                }
+            VStack(spacing: AppTheme.Spacing.md) {
+                // Dark mode picker
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                    HStack {
+                        SettingsIcon(name: "moon.stars.fill", color: Color.indigo)
+                        Text(AppStrings.appearanceModeLabel)
+                            .font(AppTheme.Typography.subheadline(weight: .medium))
+                            .foregroundColor(AppTheme.Colors.textPrimary)
+                        Spacer()
+                    }
 
-                Picker(AppStrings.languageLabel, selection: $appLanguage) {
-                    Text(AppStrings.english).tag("en")
-                    Text(AppStrings.japanese).tag("ja")
+                    HStack(spacing: AppTheme.Spacing.sm) {
+                        AppearanceModeButton(
+                            icon: "iphone", label: AppStrings.systemMode,
+                            value: "system", selection: $colorScheme
+                        )
+                        AppearanceModeButton(
+                            icon: "sun.max.fill", label: AppStrings.lightMode,
+                            value: "light", selection: $colorScheme
+                        )
+                        AppearanceModeButton(
+                            icon: "moon.fill", label: AppStrings.darkModeOption,
+                            value: "dark", selection: $colorScheme
+                        )
+                    }
                 }
-                .pickerStyle(.segmented)
+                .padding(AppTheme.Spacing.md)
+
+                Divider()
+                    .padding(.leading, AppTheme.Spacing.md)
+
+                // Language picker
+                VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                    HStack {
+                        SettingsIcon(name: "globe", color: AppTheme.Colors.deepBlue)
+                        Text(AppStrings.languageLabel)
+                            .font(AppTheme.Typography.subheadline(weight: .medium))
+                            .foregroundColor(AppTheme.Colors.textPrimary)
+                        Spacer()
+                    }
+
+                    Picker(AppStrings.languageLabel, selection: $appLanguage) {
+                        Text(AppStrings.english).tag("en")
+                        Text(AppStrings.japanese).tag("ja")
+                    }
+                    .pickerStyle(.segmented)
+                }
+                .padding(AppTheme.Spacing.md)
+                .padding(.top, 0)
             }
-            .padding(AppTheme.Spacing.md)
         }
     }
 
@@ -213,6 +240,56 @@ struct SettingsView: View {
     }
 }
 
+// MARK: - AppearanceModeButton
+
+struct AppearanceModeButton: View {
+    let icon: String
+    let label: String
+    let value: String
+    @Binding var selection: String
+
+    private var isSelected: Bool { selection == value }
+
+    var body: some View {
+        Button {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                selection = value
+                applyAppIcon()
+            }
+        } label: {
+            VStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(isSelected ? AppTheme.Colors.primaryBlue : AppTheme.Colors.textSecondary)
+
+                Text(label)
+                    .font(AppTheme.Typography.caption(weight: isSelected ? .semibold : .regular))
+                    .foregroundColor(isSelected ? AppTheme.Colors.primaryBlue : AppTheme.Colors.textSecondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+            .background(
+                RoundedRectangle(cornerRadius: AppTheme.Radius.sm, style: .continuous)
+                    .fill(isSelected ? AppTheme.Colors.lightBlue : AppTheme.Colors.paleBackground)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.Radius.sm, style: .continuous)
+                    .stroke(
+                        isSelected ? AppTheme.Colors.primaryBlue.opacity(0.4) : AppTheme.Colors.divider,
+                        lineWidth: 1.5
+                    )
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func applyAppIcon() {
+        guard UIApplication.shared.supportsAlternateIcons else { return }
+        let iconName: String? = value == "dark" ? "AppIcon-Dark" : nil
+        UIApplication.shared.setAlternateIconName(iconName) { _ in }
+    }
+}
+
 // MARK: - Local Helper Components (Settings-scoped)
 
 struct SettingsGroupCard<Content: View>: View {
@@ -230,7 +307,7 @@ struct SettingsGroupCard<Content: View>: View {
                 .padding(.horizontal, AppTheme.Spacing.xs)
 
             content
-                .background(Color.white)
+                .background(AppTheme.Colors.cardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
                 .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
         }

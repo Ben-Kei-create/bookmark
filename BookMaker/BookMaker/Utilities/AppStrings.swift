@@ -73,7 +73,11 @@ struct AppStrings {
     static var version: String { isJapanese ? "バージョン" : "Version" }
     static var contactSupport: String { isJapanese ? "サポートに連絡" : "Contact Support" }
     static var generalSection: String { isJapanese ? "一般" : "General" }
-    static var appearanceSection: String { isJapanese ? "言語" : "Language" }
+    static var appearanceSection: String { isJapanese ? "外観" : "Appearance" }
+    static var appearanceModeLabel: String { isJapanese ? "外観モード" : "Appearance Mode" }
+    static var systemMode: String { isJapanese ? "自動" : "Auto" }
+    static var lightMode: String { isJapanese ? "ライト" : "Light" }
+    static var darkModeOption: String { isJapanese ? "ダーク" : "Dark" }
     static var dataSection: String { isJapanese ? "データ" : "Data" }
     static var openLinksIn: String { isJapanese ? "リンクを開く方法" : "Open Links In" }
     static var exportBookmarks: String { isJapanese ? "エクスポート" : "Export Bookmarks" }
