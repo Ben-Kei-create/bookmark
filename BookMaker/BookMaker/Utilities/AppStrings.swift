@@ -69,9 +69,9 @@ struct AppStrings {
     static var appearanceSection: String { isJapanese ? "外観" : "Appearance" }
     static var dataSection: String { isJapanese ? "データ" : "Data" }
     static var openLinksIn: String { isJapanese ? "リンクを開く方法" : "Open Links In" }
-    static var exportBookmarks: String { isJapanese ? "ブックマークをエクスポート" : "Export Bookmarks" }
-    static var importBookmarks: String { isJapanese ? "ブックマークをインポート" : "Import Bookmarks" }
-    static var clearAllBookmarks: String { isJapanese ? "ブックマークをすべて削除" : "Clear All Bookmarks" }
+    static var exportBookmarks: String { isJapanese ? "エクスポート" : "Export Bookmarks" }
+    static var importBookmarks: String { isJapanese ? "インポート" : "Import Bookmarks" }
+    static var clearAllBookmarks: String { isJapanese ? "すべて削除" : "Clear All Bookmarks" }
     static var clearAllConfirmTitle: String { isJapanese ? "本当に削除しますか？" : "Clear All Bookmarks?" }
     static var clearAllConfirmMessage: String { isJapanese ? "すべてのブックマークが完全に削除されます。この操作は取り消せません。" : "This will permanently delete all bookmarks and cannot be undone." }
     static var privacyPolicy: String { isJapanese ? "プライバシーポリシー" : "Privacy Policy" }
@@ -86,13 +86,13 @@ struct AppStrings {
     }
     static var emptyTip: String {
         isJapanese
-            ? "ヒント：ブックマークの ⭐ をタップしてお気に入りに追加できます。"
-            : "Tip: Tap ⭐ on any bookmark to mark it as a favorite."
+            ? "ヒント：ブックマークの ＋ をタップしてお気に入りに追加できます。"
+            : "Tip: Tap ＋ on any bookmark to mark it as a favorite."
     }
 
     // MARK: - Sort Options
-    static var newestFirst: String { isJapanese ? "最新順" : "Newest First" }
-    static var oldestFirst: String { isJapanese ? "最古順" : "Oldest First" }
-    static var alphabetical: String { isJapanese ? "A～Z" : "A–Z" }
-    static var lastModified: String { isJapanese ? "最近編集" : "Last Modified" }
+    static var newestFirst: String { isJapanese ? "新しい順" : "Newest First" }
+    static var oldestFirst: String { isJapanese ? "古い順" : "Oldest First" }
+    static var alphabetical: String { isJapanese ? "A ～ Z" : "A–Z" }
+    static var lastModified: String { isJapanese ? "最近編集した順" : "Last Modified" }
 }
