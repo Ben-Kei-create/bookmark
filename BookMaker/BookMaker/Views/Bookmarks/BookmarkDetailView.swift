@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreData
 
 struct BookmarkDetailView: View {
     @Environment(\.managedObjectContext) private var viewContext
@@ -59,7 +60,7 @@ struct BookmarkDetailView: View {
             Button("Delete", role: .destructive) { deleteAndDismiss() }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text(""\(entity.title)" will be removed.")
+            Text("\"\(entity.title)\" will be removed.")
         }
     }
 

@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreData
 
 struct BookmarkRow: View {
     let entity: BookmarkEntity
@@ -46,7 +47,7 @@ struct BookmarkRow: View {
 
             Label(URLValidator.extractDomain(from: entity.url), systemImage: "link")
                 .font(.caption)
-                .foregroundColor(.tertiary)
+                .foregroundColor(.secondary)
                 .lineLimit(1)
         }
     }

@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreData
 
 struct BookmarkFormView: View {
     @Environment(\.managedObjectContext) private var viewContext

@@ -1,5 +1,6 @@
 import CoreData
 import Foundation
+import Combine
 
 @MainActor
 class BookmarkFormViewModel: ObservableObject {
