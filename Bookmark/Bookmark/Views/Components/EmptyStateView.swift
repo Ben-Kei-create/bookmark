@@ -3,6 +3,7 @@ import SwiftUI
 struct EmptyStateView: View {
     let action: () -> Void
     @State private var appeared = false
+    @AppStorage("appLanguage") private var appLanguage = "en"
 
     var body: some View {
         VStack(spacing: 0) {
@@ -18,7 +19,7 @@ struct EmptyStateView: View {
                     .offset(y: appeared ? 0 : 12)
 
                 VStack(spacing: AppTheme.Spacing.sm) {
-                    PrimaryGradientButton("Add Your First Bookmark", icon: "plus", action: action)
+                    PrimaryGradientButton(AppStrings.addYourFirstBookmark, icon: "plus", action: action)
                     tipCard
                 }
                 .opacity(appeared ? 1 : 0)
@@ -87,16 +88,16 @@ struct EmptyStateView: View {
     private var headlineBlock: some View {
         VStack(spacing: AppTheme.Spacing.sm) {
             VStack(spacing: 2) {
-                Text("Your bookmarks,")
+                Text(AppStrings.emptyHeadline1)
                     .font(AppTheme.Typography.title(weight: .bold))
                     .foregroundColor(AppTheme.Colors.textPrimary)
-                Text("always within reach.")
+                Text(AppStrings.emptyHeadline2)
                     .font(AppTheme.Typography.title(weight: .bold))
                     .foregroundColor(AppTheme.Colors.primaryBlue)
             }
             .multilineTextAlignment(.center)
 
-            Text("Save your favorite sites, organize them with ease, and access them anytime — all stored privately on your device.")
+            Text(AppStrings.emptyDescription)
                 .font(AppTheme.Typography.subheadline())
                 .foregroundColor(AppTheme.Colors.textSecondary)
                 .multilineTextAlignment(.center)
@@ -111,7 +112,7 @@ struct EmptyStateView: View {
             Image(systemName: "lightbulb.fill")
                 .font(.system(size: 13))
                 .foregroundColor(AppTheme.Colors.primaryBlue)
-            Text("Tip: Tap ⭐ on any bookmark to mark it as a favorite.")
+            Text(AppStrings.emptyTip)
                 .font(AppTheme.Typography.caption(weight: .medium))
                 .foregroundColor(AppTheme.Colors.textSecondary)
             Spacer()

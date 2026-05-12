@@ -65,6 +65,30 @@ struct AppStrings {
     static var about: String { isJapanese ? "について" : "About" }
     static var version: String { isJapanese ? "バージョン" : "Version" }
     static var contactSupport: String { isJapanese ? "サポートに連絡" : "Contact Support" }
+    static var generalSection: String { isJapanese ? "一般" : "General" }
+    static var appearanceSection: String { isJapanese ? "外観" : "Appearance" }
+    static var dataSection: String { isJapanese ? "データ" : "Data" }
+    static var openLinksIn: String { isJapanese ? "リンクを開く方法" : "Open Links In" }
+    static var exportBookmarks: String { isJapanese ? "ブックマークをエクスポート" : "Export Bookmarks" }
+    static var importBookmarks: String { isJapanese ? "ブックマークをインポート" : "Import Bookmarks" }
+    static var clearAllBookmarks: String { isJapanese ? "ブックマークをすべて削除" : "Clear All Bookmarks" }
+    static var clearAllConfirmTitle: String { isJapanese ? "本当に削除しますか？" : "Clear All Bookmarks?" }
+    static var clearAllConfirmMessage: String { isJapanese ? "すべてのブックマークが完全に削除されます。この操作は取り消せません。" : "This will permanently delete all bookmarks and cannot be undone." }
+    static var privacyPolicy: String { isJapanese ? "プライバシーポリシー" : "Privacy Policy" }
+
+    // MARK: - Empty State
+    static var emptyHeadline1: String { isJapanese ? "ブックマークを、" : "Your bookmarks," }
+    static var emptyHeadline2: String { isJapanese ? "いつでも手元に。" : "always within reach." }
+    static var emptyDescription: String {
+        isJapanese
+            ? "お気に入りのサイトを保存して、整理して、いつでもアクセス。すべてデバイスに安全に保存されます。"
+            : "Save your favorite sites, organize them with ease, and access them anytime — all stored privately on your device."
+    }
+    static var emptyTip: String {
+        isJapanese
+            ? "ヒント：ブックマークの ⭐ をタップしてお気に入りに追加できます。"
+            : "Tip: Tap ⭐ on any bookmark to mark it as a favorite."
+    }
 
     // MARK: - Sort Options
     static var newestFirst: String { isJapanese ? "最新順" : "Newest First" }

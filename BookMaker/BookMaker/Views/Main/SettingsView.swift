@@ -26,11 +26,11 @@ struct SettingsView: View {
             }
             .navigationTitle(AppStrings.settings)
             .navigationBarTitleDisplayMode(.large)
-            .alert("Clear All Bookmarks?", isPresented: $showClearAlert) {
-                Button("Clear All", role: .destructive) { }
+            .alert(AppStrings.clearAllConfirmTitle, isPresented: $showClearAlert) {
+                Button(AppStrings.clearAllBookmarks, role: .destructive) { }
                 Button(AppStrings.cancel, role: .cancel) { }
             } message: {
-                Text("This will permanently delete all bookmarks and cannot be undone.")
+                Text(AppStrings.clearAllConfirmMessage)
             }
         }
     }
@@ -65,7 +65,7 @@ struct SettingsView: View {
     // MARK: - General
 
     private var generalSection: some View {
-        SettingsGroupCard(title: "General") {
+        SettingsGroupCard(title: AppStrings.generalSection) {
             VStack(spacing: 0) {
                 settingsPickerRow(
                     icon: "arrow.up.arrow.down", iconColor: AppTheme.Colors.primaryBlue,
@@ -76,7 +76,7 @@ struct SettingsView: View {
                 SettingsDivider()
                 settingsPickerRow(
                     icon: "globe", iconColor: Color.teal,
-                    label: "Open Links In",
+                    label: AppStrings.openLinksIn,
                     selection: $openLinksIn,
                     options: [("Safari", "Safari"), ("In-App Browser", "In-App Browser")]
                 )
@@ -87,7 +87,7 @@ struct SettingsView: View {
     // MARK: - Appearance
 
     private var appearanceSection: some View {
-        SettingsGroupCard(title: "Appearance") {
+        SettingsGroupCard(title: AppStrings.appearanceSection) {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                 HStack {
                     SettingsIcon(name: "globe", color: AppTheme.Colors.deepBlue)
@@ -110,16 +110,16 @@ struct SettingsView: View {
     // MARK: - Data
 
     private var dataSection: some View {
-        SettingsGroupCard(title: "Data") {
+        SettingsGroupCard(title: AppStrings.dataSection) {
             VStack(spacing: 0) {
                 settingsActionRow(icon: "square.and.arrow.up", iconColor: Color.indigo,
-                                  label: "Export Bookmarks") { }
+                                  label: AppStrings.exportBookmarks) { }
                 SettingsDivider()
                 settingsActionRow(icon: "square.and.arrow.down", iconColor: Color.teal,
-                                  label: "Import Bookmarks") { }
+                                  label: AppStrings.importBookmarks) { }
                 SettingsDivider()
                 settingsActionRow(icon: "trash.fill", iconColor: Color.red,
-                                  label: "Clear All Bookmarks", isDestructive: true) {
+                                  label: AppStrings.clearAllBookmarks, isDestructive: true) {
                     showClearAlert = true
                 }
             }
@@ -165,7 +165,7 @@ struct SettingsView: View {
                 SettingsDivider()
 
                 settingsActionRow(icon: "hand.raised.fill", iconColor: Color.purple,
-                                  label: "Privacy Policy") { }
+                                  label: AppStrings.privacyPolicy) { }
             }
         }
     }
