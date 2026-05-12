@@ -11,6 +11,7 @@ struct BookmarkListView: View {
     private var allBookmarks: FetchedResults<BookmarkEntity>
 
     @AppStorage("appLanguage") private var appLanguage = "en"
+    @AppStorage("bookmarkLayout") private var bookmarkLayout = "list"
     @State private var searchText = ""
     @State private var sortOption: BookmarkSortOption = .dateCreatedNewest
     @State private var showAddSheet = false
@@ -87,6 +88,8 @@ struct BookmarkListView: View {
                             Spacer()
                             ContentUnavailableView.search(text: searchText)
                             Spacer()
+                        } else if bookmarkLayout == "grid" {
+                            bookmarkGrid
                         } else {
                             bookmarkList
                         }
@@ -147,6 +150,29 @@ struct BookmarkListView: View {
                     }
                 }
             }
+        }
+    }
+
+    // MARK: - Grid
+
+    private var bookmarkGrid: some View {
+        ScrollView {
+            LazyVGrid(
+                columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 4),
+                spacing: 16
+            ) {
+                ForEach(displayBookmarks) { bookmark in
+                    NavigationLink {
+                        BookmarkDetailView(entity: bookmark)
+                    } label: {
+                        BookmarkGridCell(entity: bookmark)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, AppTheme.Spacing.lg)
+            .padding(.top, AppTheme.Spacing.md)
+            .padding(.bottom, 100)
         }
     }
 

@@ -63,6 +63,9 @@ struct AppStrings {
     // MARK: - Settings
     static var preferences: String { isJapanese ? "設定" : "Preferences" }
     static var defaultSort: String { isJapanese ? "デフォルトソート" : "Default Sort" }
+    static var displayStyle: String { isJapanese ? "表示スタイル" : "Display Style" }
+    static var listStyle: String { isJapanese ? "リスト" : "List" }
+    static var gridStyle: String { isJapanese ? "アイコングリッド" : "Icon Grid" }
     static var languageLabel: String { isJapanese ? "言語" : "Language" }
     static var english: String { "English" }
     static var japanese: String { "日本語" }

@@ -266,6 +266,57 @@ struct DomainIconView: View {
     }
 }
 
+// MARK: - BookmarkGridCell
+
+struct BookmarkGridCell: View {
+    let entity: BookmarkEntity
+
+    private var faviconURL: URL? {
+        URL(string: "https://www.google.com/s2/favicons?domain=\(entity.domain)&sz=128")
+    }
+
+    private var initial: String {
+        String(entity.domain.prefix(1)).uppercased()
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            let size = geo.size.width
+            AsyncImage(url: faviconURL) { phase in
+                switch phase {
+                case .success(let image):
+                    ZStack {
+                        RoundedRectangle(cornerRadius: size * 0.22, style: .continuous)
+                            .fill(Color.white)
+                            .shadow(color: Color.black.opacity(0.10), radius: 6, x: 0, y: 2)
+                        image
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: size * 0.60, height: size * 0.60)
+                    }
+                default:
+                    ZStack {
+                        RoundedRectangle(cornerRadius: size * 0.22, style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    colors: [AppTheme.Colors.primaryBlue, AppTheme.Colors.deepBlue],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .shadow(color: AppTheme.Colors.primaryBlue.opacity(0.30), radius: 6, x: 0, y: 2)
+                        Text(initial)
+                            .font(.system(size: size * 0.38, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                }
+            }
+            .frame(width: size, height: size)
+        }
+        .aspectRatio(1, contentMode: .fit)
+    }
+}
+
 // MARK: - SectionHeaderLabel
 
 struct SectionHeaderLabel: View {

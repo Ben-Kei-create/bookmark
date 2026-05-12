@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @AppStorage("defaultSortOption") private var defaultSortKey = BookmarkSortOption.dateCreatedNewest.rawValue
     @AppStorage("appLanguage") private var appLanguage = "en"
+    @AppStorage("bookmarkLayout") private var bookmarkLayout = "list"
     @State private var showClearAlert = false
     @State private var openLinksIn = "Safari"
 
@@ -72,6 +73,13 @@ struct SettingsView: View {
                     label: AppStrings.defaultSort,
                     selection: $defaultSortKey,
                     options: BookmarkSortOption.allCases.map { ($0.displayName, $0.rawValue) }
+                )
+                SettingsDivider()
+                settingsPickerRow(
+                    icon: "square.grid.2x2", iconColor: Color.purple,
+                    label: AppStrings.displayStyle,
+                    selection: $bookmarkLayout,
+                    options: [(AppStrings.listStyle, "list"), (AppStrings.gridStyle, "grid")]
                 )
                 SettingsDivider()
                 settingsPickerRow(
