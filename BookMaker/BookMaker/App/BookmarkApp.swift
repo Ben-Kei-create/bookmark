@@ -25,6 +25,11 @@ struct PersistenceController {
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
         }
 
+        container.persistentStoreDescriptions.forEach { desc in
+            desc.setOption(true as NSNumber, forKey: NSMigratePersistentStoresAutomaticallyOption)
+            desc.setOption(true as NSNumber, forKey: NSInferMappingModelAutomaticallyOption)
+        }
+
         container.loadPersistentStores { _, error in
             if let error = error as NSError? {
                 fatalError("Core Data load failed: \(error), \(error.userInfo)")

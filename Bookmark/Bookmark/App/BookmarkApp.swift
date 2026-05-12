@@ -25,9 +25,9 @@ struct PersistenceController {
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
         }
 
-        if let description = container.persistentStoreDescriptions.first {
-            description.setOption(true as NSNumber, forKey: NSMigratePersistentStoresAutomaticallyOption)
-            description.setOption(true as NSNumber, forKey: NSInferMappingModelAutomaticallyOption)
+        container.persistentStoreDescriptions.forEach { desc in
+            desc.setOption(true as NSNumber, forKey: NSMigratePersistentStoresAutomaticallyOption)
+            desc.setOption(true as NSNumber, forKey: NSInferMappingModelAutomaticallyOption)
         }
 
         container.loadPersistentStores { _, error in
