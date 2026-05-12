@@ -18,11 +18,17 @@ struct PersistenceController {
 
     let container: NSPersistentContainer
 
+    static let appGroupID = "group.com.fumiakiMogi777.BookMaker"
+
     init(inMemory: Bool = false) {
         container = NSPersistentContainer(name: "Bookmark")
 
         if inMemory {
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
+        } else if let groupURL = FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: Self.appGroupID) {
+            let storeURL = groupURL.appendingPathComponent("Bookmark.sqlite")
+            container.persistentStoreDescriptions = [NSPersistentStoreDescription(url: storeURL)]
         }
 
         container.persistentStoreDescriptions.forEach { desc in

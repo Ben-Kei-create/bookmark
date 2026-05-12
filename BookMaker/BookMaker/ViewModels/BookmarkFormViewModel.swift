@@ -142,7 +142,7 @@ class BookmarkFormViewModel: ObservableObject {
               let range = html.range(of: "(?i)<title[^>]*>([^<]+)</title>", options: .regularExpression)
         else { return }
 
-        var extracted = String(html[range])
+        let extracted = String(html[range])
             .replacingOccurrences(of: "(?i)<title[^>]*>", with: "", options: .regularExpression)
             .replacingOccurrences(of: "(?i)</title>", with: "", options: .regularExpression)
             .trimmingCharacters(in: .whitespacesAndNewlines)
