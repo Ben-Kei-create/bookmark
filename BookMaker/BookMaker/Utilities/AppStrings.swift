@@ -6,7 +6,7 @@ struct AppStrings {
     static var isJapanese: Bool { appLanguage == "ja" }
 
     // MARK: - Tabs
-    static var bookmarks: String { isJapanese ? "ブックマーク" : "Bookmarks" }
+    static var bookmarks: String { isJapanese ? "BookMarks" : "BookMarks" }
     static var settings: String { isJapanese ? "設定" : "Settings" }
 
     // MARK: - Bookmark List
@@ -59,14 +59,14 @@ struct AppStrings {
     // MARK: - Settings
     static var preferences: String { isJapanese ? "設定" : "Preferences" }
     static var defaultSort: String { isJapanese ? "デフォルトソート" : "Default Sort" }
-    static var languageLabel: String { isJapanese ? "言語" : "Language" }
+//    static var languageLabel: String { isJapanese ? "言語" : "Language" }
     static var english: String { "English" }
     static var japanese: String { "日本語" }
     static var about: String { isJapanese ? "について" : "About" }
     static var version: String { isJapanese ? "バージョン" : "Version" }
     static var contactSupport: String { isJapanese ? "サポートに連絡" : "Contact Support" }
     static var generalSection: String { isJapanese ? "一般" : "General" }
-    static var appearanceSection: String { isJapanese ? "外観" : "Appearance" }
+    static var appearanceSection: String { isJapanese ? "言語" : "AppLanguageearance" }
     static var dataSection: String { isJapanese ? "データ" : "Data" }
     static var openLinksIn: String { isJapanese ? "リンクを開く方法" : "Open Links In" }
     static var exportBookmarks: String { isJapanese ? "エクスポート" : "Export Bookmarks" }

@@ -91,15 +91,15 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
                 HStack {
                     SettingsIcon(name: "globe", color: AppTheme.Colors.deepBlue)
-                    Text(AppStrings.languageLabel)
-                        .font(AppTheme.Typography.subheadline(weight: .medium))
-                        .foregroundColor(AppTheme.Colors.textPrimary)
+//                    Text(AppStrings.languageLabel)
+//                        .font(AppTheme.Typography.subheadline(weight: .medium))
+//                        .foregroundColor(AppTheme.Colors.textPrimary)
                     Spacer()
                 }
 
-                Picker(AppStrings.languageLabel, selection: $appLanguage) {
-                    Text(AppStrings.english).tag("en")
-                    Text(AppStrings.japanese).tag("ja")
+//                Picker(AppStrings.languageLabel, selection: $appLanguage) {
+//                    Text(AppStrings.english).tag("en")
+//                    Text(AppStrings.japanese).tag("ja")
                 }
                 .pickerStyle(.segmented)
             }
@@ -120,7 +120,7 @@ struct SettingsView: View {
                 SettingsDivider()
                 settingsActionRow(icon: "trash.fill", iconColor: Color.red,
                                   label: AppStrings.clearAllBookmarks, isDestructive: true) {
-                    showClearAlert = true
+//                    showClearAlert = true
                 }
             }
         }
@@ -204,7 +204,7 @@ struct SettingsView: View {
         }
         .padding(AppTheme.Spacing.md)
     }
-}
+
 
 // MARK: - Local Helper Components (Settings-scoped)
 
