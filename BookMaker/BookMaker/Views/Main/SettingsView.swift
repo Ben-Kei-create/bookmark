@@ -204,7 +204,7 @@ struct SettingsView: View {
         }
         .padding(AppTheme.Spacing.md)
     }
-
+}
 
 // MARK: - Local Helper Components (Settings-scoped)
 
