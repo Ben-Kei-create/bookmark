@@ -13,7 +13,7 @@ struct SettingsView: View {
     @AppStorage("bookmarkLayout") private var bookmarkLayout = "list"
     @AppStorage("colorScheme") private var colorScheme = "system"
     @State private var showClearAlert = false
-    @State private var openLinksIn = "Safari"
+    @AppStorage("openLinksIn") private var openLinksIn = "Safari"
     @State private var showExportSheet = false
     @State private var exportFileURL: URL?
 
@@ -38,7 +38,9 @@ struct SettingsView: View {
             .navigationTitle(AppStrings.settings)
             .navigationBarTitleDisplayMode(.large)
             .alert(AppStrings.clearAllConfirmTitle, isPresented: $showClearAlert) {
-                Button(AppStrings.clearAllBookmarks, role: .destructive) { }
+                Button(AppStrings.clearAllBookmarks, role: .destructive) {
+                    allBookmarks.forEach { try? $0.softDelete(in: viewContext) }
+                }
                 Button(AppStrings.cancel, role: .cancel) { }
             } message: {
                 Text(AppStrings.clearAllConfirmMessage)

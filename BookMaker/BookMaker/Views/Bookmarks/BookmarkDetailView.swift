@@ -1,5 +1,6 @@
 import SwiftUI
 import CoreData
+import SafariServices
 
 struct BookmarkDetailView: View {
     @Environment(\.managedObjectContext) private var viewContext
@@ -7,10 +8,12 @@ struct BookmarkDetailView: View {
 
     @ObservedObject var entity: BookmarkEntity
     @AppStorage("appLanguage") private var appLanguage = "en"
+    @AppStorage("openLinksIn") private var openLinksIn = "Safari"
 
     @State private var showEditSheet = false
     @State private var showDeleteAlert = false
     @State private var showShareSheet = false
+    @State private var showInAppBrowser = false
     @State private var urlCopied = false
 
     var body: some View {
@@ -56,6 +59,11 @@ struct BookmarkDetailView: View {
         .sheet(isPresented: $showShareSheet) {
             ShareSheet(items: [entity.url])
                 .presentationDetents([.medium, .large])
+        }
+        .fullScreenCover(isPresented: $showInAppBrowser) {
+            if let url = URL(string: entity.url) {
+                SafariView(url: url).ignoresSafeArea()
+            }
         }
         .alert(AppStrings.deleteBookmark, isPresented: $showDeleteAlert) {
             Button(AppStrings.delete, role: .destructive) { deleteAndDismiss() }
@@ -232,9 +240,13 @@ struct BookmarkDetailView: View {
     // MARK: - Actions
 
     private func openInSafari() {
-        guard let url = URL(string: entity.url) else { return }
+        guard URL(string: entity.url) != nil else { return }
         try? entity.recordVisit(in: viewContext)
-        UIApplication.shared.open(url)
+        if openLinksIn == "In-App Browser" {
+            showInAppBrowser = true
+        } else {
+            UIApplication.shared.open(URL(string: entity.url)!)
+        }
     }
 
     private func copyURL() {

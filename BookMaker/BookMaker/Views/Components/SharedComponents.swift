@@ -1,4 +1,5 @@
 import SwiftUI
+import SafariServices
 
 // MARK: - PrimaryGradientButton
 
@@ -378,6 +379,16 @@ struct FlowLayout: Layout {
         }
         return rows
     }
+}
+
+// MARK: - SafariView
+
+struct SafariView: UIViewControllerRepresentable {
+    let url: URL
+    func makeUIViewController(context: Context) -> SFSafariViewController {
+        SFSafariViewController(url: url)
+    }
+    func updateUIViewController(_ vc: SFSafariViewController, context: Context) {}
 }
 
 // MARK: - ShareSheet

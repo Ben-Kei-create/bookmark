@@ -88,7 +88,10 @@ struct BookmarkFormView: View {
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .focused($focusedField, equals: .url)
-                        .onChange(of: viewModel.url) { _, _ in viewModel.validateURL(in: viewContext) }
+                        .onChange(of: viewModel.url) { _, _ in
+                            viewModel.validateURL(in: viewContext)
+                            Task { await viewModel.fetchPageTitle() }
+                        }
                         .submitLabel(.next)
                         .onSubmit { focusedField = .title }
 
@@ -128,9 +131,15 @@ struct BookmarkFormView: View {
                 SectionLabel(text: AppStrings.title, icon: "textformat")
 
                 HStack(spacing: AppTheme.Spacing.sm) {
-                    Image(systemName: "character.cursor.ibeam")
-                        .foregroundColor(AppTheme.Colors.primaryBlue)
-                        .frame(width: 20)
+                    if viewModel.isFetchingTitle {
+                        ProgressView()
+                            .controlSize(.small)
+                            .frame(width: 20)
+                    } else {
+                        Image(systemName: "character.cursor.ibeam")
+                            .foregroundColor(AppTheme.Colors.primaryBlue)
+                            .frame(width: 20)
+                    }
 
                     TextField(viewModel.titlePlaceholder, text: $viewModel.title)
                         .focused($focusedField, equals: .title)

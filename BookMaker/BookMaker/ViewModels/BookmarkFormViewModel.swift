@@ -15,6 +15,7 @@ class BookmarkFormViewModel: ObservableObject {
     }
     @Published var urlError: String?
     @Published var isSaving = false
+    @Published var isFetchingTitle = false
     @Published var saveError: String?
     @Published var tags: [String] = []
     @Published var tagInput = ""
@@ -120,5 +121,31 @@ class BookmarkFormViewModel: ObservableObject {
                 title = URLValidator.extractDomain(from: URLValidator.normalizeURL(pasted))
             }
         }
+    }
+
+    func fetchPageTitle() async {
+        guard URLValidator.isValidURL(url), title.isEmpty, !isFetchingTitle else { return }
+        let normalized = URLValidator.normalizeURL(url)
+        guard let fetchURL = URL(string: normalized) else { return }
+
+        isFetchingTitle = true
+        defer { isFetchingTitle = false }
+
+        var request = URLRequest(url: fetchURL)
+        request.setValue("Mozilla/5.0", forHTTPHeaderField: "User-Agent")
+        request.timeoutInterval = 5
+
+        guard let (data, _) = try? await URLSession.shared.data(for: request),
+              let html = String(data: data, encoding: .utf8) ?? String(data: data, encoding: .isoLatin1),
+              let range = html.range(of: "(?i)<title[^>]*>([^<]+)</title>", options: .regularExpression)
+        else { return }
+
+        var extracted = String(html[range])
+            .replacingOccurrences(of: "(?i)<title[^>]*>", with: "", options: .regularExpression)
+            .replacingOccurrences(of: "(?i)</title>", with: "", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !extracted.isEmpty, title.isEmpty else { return }
+        title = extracted
     }
 }
