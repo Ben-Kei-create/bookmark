@@ -102,15 +102,15 @@ struct SettingsView: View {
 
                     HStack(spacing: AppTheme.Spacing.sm) {
                         AppearanceModeButton(
-                            icon: "iphone", label: AppStrings.systemMode,
+                            label: AppStrings.systemMode,
                             value: "system", selection: $colorScheme
                         )
                         AppearanceModeButton(
-                            icon: "sun.max.fill", label: AppStrings.lightMode,
+                            label: AppStrings.lightMode,
                             value: "light", selection: $colorScheme
                         )
                         AppearanceModeButton(
-                            icon: "moon.fill", label: AppStrings.darkModeOption,
+                            label: AppStrings.darkModeOption,
                             value: "dark", selection: $colorScheme
                         )
                     }
@@ -243,7 +243,6 @@ struct SettingsView: View {
 // MARK: - AppearanceModeButton
 
 struct AppearanceModeButton: View {
-    let icon: String
     let label: String
     let value: String
     @Binding var selection: String
@@ -257,28 +256,22 @@ struct AppearanceModeButton: View {
                 applyAppIcon()
             }
         } label: {
-            VStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundColor(isSelected ? AppTheme.Colors.primaryBlue : AppTheme.Colors.textSecondary)
-
-                Text(label)
-                    .font(AppTheme.Typography.caption(weight: isSelected ? .semibold : .regular))
-                    .foregroundColor(isSelected ? AppTheme.Colors.primaryBlue : AppTheme.Colors.textSecondary)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
-            .background(
-                RoundedRectangle(cornerRadius: AppTheme.Radius.sm, style: .continuous)
-                    .fill(isSelected ? AppTheme.Colors.lightBlue : AppTheme.Colors.paleBackground)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: AppTheme.Radius.sm, style: .continuous)
-                    .stroke(
-                        isSelected ? AppTheme.Colors.primaryBlue.opacity(0.4) : AppTheme.Colors.divider,
-                        lineWidth: 1.5
-                    )
-            )
+            Text(label)
+                .font(AppTheme.Typography.subheadline(weight: isSelected ? .semibold : .regular))
+                .foregroundColor(isSelected ? AppTheme.Colors.primaryBlue : AppTheme.Colors.textSecondary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                .background(
+                    RoundedRectangle(cornerRadius: AppTheme.Radius.sm, style: .continuous)
+                        .fill(isSelected ? AppTheme.Colors.lightBlue : AppTheme.Colors.paleBackground)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppTheme.Radius.sm, style: .continuous)
+                        .stroke(
+                            isSelected ? AppTheme.Colors.primaryBlue.opacity(0.4) : AppTheme.Colors.divider,
+                            lineWidth: 1.5
+                        )
+                )
         }
         .buttonStyle(.plain)
     }
