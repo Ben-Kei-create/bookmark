@@ -7,7 +7,9 @@ class ShareViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        NSLog("🔷 ShareViewController viewDidLoad called")
         extractSharedURL { [weak self] url, title in
+            NSLog("🔷 ShareViewController extractSharedURL completed: url=\(url), title=\(title)")
             DispatchQueue.main.async {
                 self?.presentShareView(url: url, title: title)
             }
