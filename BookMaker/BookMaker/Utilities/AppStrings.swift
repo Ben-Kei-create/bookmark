@@ -1,9 +1,9 @@
 import SwiftUI
 
 struct AppStrings {
-    @AppStorage("appLanguage") static var language = "en"
+    @AppStorage("appLanguage") static var appLanguage = "en"
 
-    static var isJapanese: Bool { language == "ja" }
+    static var isJapanese: Bool { appLanguage == "ja" }
 
     // MARK: - Tabs
     static var bookmarks: String { isJapanese ? "ブックマーク" : "Bookmarks" }
@@ -59,7 +59,7 @@ struct AppStrings {
     // MARK: - Settings
     static var preferences: String { isJapanese ? "設定" : "Preferences" }
     static var defaultSort: String { isJapanese ? "デフォルトソート" : "Default Sort" }
-    static var language: String { isJapanese ? "言語" : "Language" }
+    static var languageLabel: String { isJapanese ? "言語" : "Language" }
     static var english: String { "English" }
     static var japanese: String { "日本語" }
     static var about: String { isJapanese ? "について" : "About" }
