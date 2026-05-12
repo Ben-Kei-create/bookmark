@@ -63,10 +63,6 @@ extension BookmarkEntity {
         return tags.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
     }
 
-    var folderDisplayName: String {
-        folderName ?? "Unsorted"
-    }
-
     // MARK: - Mutations
 
     func toggleFavorite(in context: NSManagedObjectContext) throws {
@@ -100,10 +96,3 @@ extension BookmarkEntity {
     }
 }
 
-struct BookmarkFormData {
-    var url: String = ""
-    var title: String = ""
-    var description: String = ""
-    var folderName: String = "Unsorted"
-    var tags: [String] = []
-}

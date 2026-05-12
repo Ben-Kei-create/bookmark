@@ -60,7 +60,6 @@ struct SettingsView: View {
             let url: String
             let title: String
             let description: String
-            let folder: String
             let tags: [String]
             let isFavorite: Bool
             let dateCreated: String
@@ -72,7 +71,6 @@ struct SettingsView: View {
                 url: bm.url,
                 title: bm.title,
                 description: bm.descriptionText,
-                folder: bm.folderName ?? "Unsorted",
                 tags: bm.tagList,
                 isFavorite: bm.isFavorite,
                 dateCreated: formatter.string(from: bm.dateCreated)

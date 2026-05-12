@@ -6,6 +6,7 @@ enum BookmarkService {
         url: String,
         title: String,
         description: String,
+        tags: [String] = [],
         in context: NSManagedObjectContext
     ) throws {
         let existing = try fetchByURL(url, in: context)
@@ -16,12 +17,13 @@ enum BookmarkService {
             ? URLValidator.extractDomain(from: normalized)
             : title
 
-        _ = BookmarkEntity.makeNew(
+        let entity = BookmarkEntity.makeNew(
             url: normalized,
             title: bookmarkTitle,
             description: description,
             in: context
         )
+        entity.tags = tags.joined(separator: ",")
         try context.save()
     }
 
@@ -29,9 +31,14 @@ enum BookmarkService {
         _ entity: BookmarkEntity,
         title: String,
         description: String,
+        tags: [String] = [],
         in context: NSManagedObjectContext
     ) throws {
-        try entity.update(title: title, description: description, in: context)
+        entity.title = title
+        entity.descriptionText = description
+        entity.tags = tags.joined(separator: ",")
+        entity.lastModified = Date()
+        try context.save()
     }
 
     static func delete(_ entity: BookmarkEntity, in context: NSManagedObjectContext) throws {

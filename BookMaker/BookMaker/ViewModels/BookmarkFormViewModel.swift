@@ -101,6 +101,7 @@ class BookmarkFormViewModel: ObservableObject {
                 entity,
                 title: title.trimmingCharacters(in: .whitespaces),
                 description: description,
+                tags: tags,
                 in: context
             )
         } else {
@@ -108,6 +109,7 @@ class BookmarkFormViewModel: ObservableObject {
                 url: url,
                 title: title,
                 description: description,
+                tags: tags,
                 in: context
             )
         }

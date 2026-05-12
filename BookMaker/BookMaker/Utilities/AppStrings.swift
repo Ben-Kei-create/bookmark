@@ -81,7 +81,6 @@ struct AppStrings {
     static var dataSection: String { isJapanese ? "データ" : "Data" }
     static var openLinksIn: String { isJapanese ? "リンクを開く方法" : "Open Links In" }
     static var exportBookmarks: String { isJapanese ? "エクスポート" : "Export Bookmarks" }
-    static var importBookmarks: String { isJapanese ? "インポート" : "Import Bookmarks" }
     static var clearAllBookmarks: String { isJapanese ? "すべて削除" : "Clear All Bookmarks" }
     static var clearAllConfirmTitle: String { isJapanese ? "本当に削除しますか？" : "Clear All Bookmarks?" }
     static var clearAllConfirmMessage: String { isJapanese ? "すべてのブックマークが完全に削除されます。この操作は取り消せません。" : "This will permanently delete all bookmarks and cannot be undone." }
@@ -106,7 +105,6 @@ struct AppStrings {
     static var bookmarksStayOnDevice: String {
         isJapanese ? "すべてのブックマークはデバイスに保存されます。" : "Your bookmarks stay on your device."
     }
-    static var folder: String { isJapanese ? "フォルダ" : "Folder" }
     static var addTags: String { isJapanese ? "タグを追加…" : "Add tags…" }
     static var add: String { isJapanese ? "追加" : "Add" }
     static var pressReturnToSaveTag: String {
