@@ -25,6 +25,8 @@ struct BookmarkListView: View {
                 $0.title.lowercased().contains(query)
                 || $0.descriptionText.lowercased().contains(query)
                 || $0.url.lowercased().contains(query)
+                || ($0.tags ?? "").lowercased().contains(query)
+                || ($0.folderName ?? "").lowercased().contains(query)
             }
         }
 
@@ -169,6 +171,7 @@ struct BookmarkListView: View {
                 }
             }
             .padding(.vertical, AppTheme.Spacing.lg)
+            .padding(.bottom, 80)
         }
     }
 

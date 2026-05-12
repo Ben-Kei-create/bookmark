@@ -11,6 +11,10 @@ public class BookmarkEntity: NSManagedObject, Identifiable {
     @NSManaged public var lastModified: Date
     @NSManaged public var isArchived: Bool
     @NSManaged public var isFavorite: Bool
+    @NSManaged public var folderName: String?
+    @NSManaged public var tags: String?
+    @NSManaged public var faviconURL: String?
+    @NSManaged public var lastVisited: Date?
 }
 
 extension BookmarkEntity {
@@ -33,8 +37,37 @@ extension BookmarkEntity {
         entity.lastModified = Date()
         entity.isArchived = false
         entity.isFavorite = false
+        entity.folderName = "Unsorted"
+        entity.tags = ""
+        entity.faviconURL = nil
+        entity.lastVisited = nil
         return entity
     }
+
+    // MARK: - Computed Properties
+
+    var domain: String {
+        guard let components = URLComponents(string: url),
+              let host = components.host else {
+            return url
+        }
+        return host.hasPrefix("www.") ? String(host.dropFirst(4)) : host
+    }
+
+    var displayTitle: String {
+        title.isEmpty ? domain : title
+    }
+
+    var tagList: [String] {
+        guard let tags, !tags.isEmpty else { return [] }
+        return tags.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+    }
+
+    var folderDisplayName: String {
+        folderName ?? "Unsorted"
+    }
+
+    // MARK: - Mutations
 
     func toggleFavorite(in context: NSManagedObjectContext) throws {
         isFavorite.toggle()
@@ -54,11 +87,23 @@ extension BookmarkEntity {
         self.lastModified = Date()
         try context.save()
     }
+
+    func updateTags(_ tagList: [String], in context: NSManagedObjectContext) throws {
+        self.tags = tagList.joined(separator: ",")
+        self.lastModified = Date()
+        try context.save()
+    }
+
+    func recordVisit(in context: NSManagedObjectContext) throws {
+        self.lastVisited = Date()
+        try context.save()
+    }
 }
 
-// Lightweight form data struct (used only for Add/Edit form state)
 struct BookmarkFormData {
     var url: String = ""
     var title: String = ""
     var description: String = ""
+    var folderName: String = "Unsorted"
+    var tags: [String] = []
 }

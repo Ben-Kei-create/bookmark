@@ -3,10 +3,14 @@
     <entity name="BookmarkEntity" representedClassName="BookmarkEntity" syncable="YES" codeGenerationType="none">
         <attribute name="dateCreated" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="descriptionText" attributeType="String" defaultValueString="" syncable="YES"/>
+        <attribute name="faviconURL" attributeType="String" optional="YES" defaultValueString="" syncable="YES"/>
+        <attribute name="folderName" attributeType="String" optional="YES" defaultValueString="Unsorted" syncable="YES"/>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="isArchived" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="isFavorite" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES" syncable="YES"/>
         <attribute name="lastModified" attributeType="Date" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="lastVisited" attributeType="Date" optional="YES" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="tags" attributeType="String" optional="YES" defaultValueString="" syncable="YES"/>
         <attribute name="title" attributeType="String" syncable="YES"/>
         <attribute name="url" attributeType="String" syncable="YES"/>
         <uniquenessConstraints>
