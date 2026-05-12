@@ -10,6 +10,8 @@ class BookmarkFormViewModel: ObservableObject {
     @Published var urlError: String?
     @Published var isSaving = false
     @Published var saveError: String?
+    @Published var tags: [String] = []
+    @Published var tagInput = ""
 
     let editingEntity: BookmarkEntity?
 
@@ -20,6 +22,20 @@ class BookmarkFormViewModel: ObservableObject {
             title = entity.title
             description = entity.descriptionText
         }
+    }
+
+    func addTag() {
+        let trimmed = tagInput.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty, !tags.contains(trimmed) else {
+            tagInput = ""
+            return
+        }
+        tags.append(trimmed)
+        tagInput = ""
+    }
+
+    func removeTag(_ tag: String) {
+        tags.removeAll { $0 == tag }
     }
 
     var isFormValid: Bool {
