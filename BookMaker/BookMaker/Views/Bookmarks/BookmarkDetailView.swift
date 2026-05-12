@@ -94,16 +94,6 @@ struct BookmarkDetailView: View {
                 Spacer()
             }
 
-            if let folder = entity.folderName, folder != "Unsorted" {
-                HStack(spacing: 4) {
-                    Image(systemName: "folder.fill")
-                        .font(.system(size: 11))
-                        .foregroundColor(AppTheme.Colors.primaryBlue)
-                    Text(folder)
-                        .font(AppTheme.Typography.caption(weight: .medium))
-                        .foregroundColor(AppTheme.Colors.textSecondary)
-                }
-            }
         }
         .appCardStyle(padding: AppTheme.Spacing.lg)
     }

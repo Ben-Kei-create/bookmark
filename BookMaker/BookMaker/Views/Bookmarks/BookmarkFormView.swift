@@ -27,7 +27,6 @@ struct BookmarkFormView: View {
                     VStack(spacing: AppTheme.Spacing.md) {
                         urlCard
                         titleCard
-                        folderCard
                         tagsCard
                         notesCard
                         PrivacyInfoCard()
@@ -142,38 +141,6 @@ struct BookmarkFormView: View {
 
                 Text(AppStrings.leaveBlankForAutoFill)
                     .font(AppTheme.Typography.caption())
-                    .foregroundColor(AppTheme.Colors.textSecondary)
-            }
-        }
-    }
-
-    // MARK: - Folder Card
-
-    private var folderCard: some View {
-        FormCard {
-            HStack(spacing: AppTheme.Spacing.md) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(AppTheme.Colors.lightBlue)
-                        .frame(width: 32, height: 32)
-                    Image(systemName: "folder.fill")
-                        .font(.system(size: 14))
-                        .foregroundColor(AppTheme.Colors.primaryBlue)
-                }
-
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(AppStrings.folder)
-                        .font(AppTheme.Typography.footnote(weight: .semibold))
-                        .foregroundColor(AppTheme.Colors.textPrimary)
-                    Text(viewModel.folderName.isEmpty ? "Unsorted" : viewModel.folderName)
-                        .font(AppTheme.Typography.caption())
-                        .foregroundColor(AppTheme.Colors.textSecondary)
-                }
-
-                Spacer()
-
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(AppTheme.Colors.textSecondary)
             }
         }
