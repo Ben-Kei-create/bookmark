@@ -120,13 +120,17 @@ struct ShareExtensionView: View {
 
     private func save() {
         guard let ctx = context else {
+            print("❌ ShareExtensionView: context が nil (SharedPersistence.shared が初期化失敗)")
             errorMessage = "データベースに接続できませんでした"
             return
         }
+        print("✅ ShareExtensionView: context 取得成功")
 
         isSaving = true
 
         let normalized = url.hasPrefix("http") ? url : "https://" + url
+        print("✅ ShareExtensionView: 正規化 URL: \(normalized)")
+
         let request = NSFetchRequest<NSManagedObject>(entityName: "BookmarkEntity")
         request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
             NSPredicate(format: "url == %@", normalized),
@@ -135,6 +139,7 @@ struct ShareExtensionView: View {
         request.fetchLimit = 1
 
         if (try? ctx.fetch(request).first) != nil {
+            print("⚠️ ShareExtensionView: URL は既に登録済み")
             errorMessage = "このURLは既に登録済みです"
             isSaving = false
             return
@@ -153,12 +158,15 @@ struct ShareExtensionView: View {
         entity.setValue(false, forKey: "isArchived")
         entity.setValue(false, forKey: "isFavorite")
         entity.setValue("", forKey: "tags")
+        print("✅ ShareExtensionView: エンティティ作成: \(finalTitle)")
 
         do {
             try ctx.save()
+            print("✅ ShareExtensionView: Core Data 保存成功")
             onComplete()
         } catch {
-            errorMessage = "保存に失敗しました"
+            print("❌ ShareExtensionView: 保存エラー: \(error.localizedDescription)")
+            errorMessage = "保存に失敗しました: \(error.localizedDescription)"
             isSaving = false
         }
     }
