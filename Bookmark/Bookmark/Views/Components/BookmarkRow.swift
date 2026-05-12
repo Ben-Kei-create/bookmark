@@ -4,26 +4,37 @@ import CoreData
 struct BookmarkRow: View {
     let entity: BookmarkEntity
     @Environment(\.managedObjectContext) private var viewContext
-    @State private var isFavorited = false
+    @State private var isFavorited: Bool
+
+    private static let dateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateStyle = .short
+        return f
+    }()
+
+    init(entity: BookmarkEntity) {
+        self.entity = entity
+        self._isFavorited = State(initialValue: entity.isFavorite)
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
-            HStack(spacing: AppTheme.Spacing.md) {
-                domainIcon
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            // Top row: icon + title/domain + star
+            HStack(alignment: .top, spacing: AppTheme.Spacing.md) {
+                DomainIconView(domain: entity.domain, size: 46)
 
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.xs) {
-                    Text(entity.title)
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                        .lineLimit(1)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(entity.displayTitle)
+                        .font(AppTheme.Typography.subheadline(weight: .semibold))
                         .foregroundColor(AppTheme.Colors.textPrimary)
+                        .lineLimit(1)
 
-                    HStack(spacing: AppTheme.Spacing.xs) {
+                    HStack(spacing: 4) {
                         Image(systemName: "link")
-                            .font(.caption2)
+                            .font(.system(size: 10))
                             .foregroundColor(AppTheme.Colors.primaryBlue)
-                        Text(URLValidator.extractDomain(from: entity.url))
-                            .font(.caption)
+                        Text(entity.domain)
+                            .font(AppTheme.Typography.caption())
                             .foregroundColor(AppTheme.Colors.textSecondary)
                             .lineLimit(1)
                     }
@@ -31,82 +42,56 @@ struct BookmarkRow: View {
 
                 Spacer()
 
-                starButton
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        try? entity.toggleFavorite(in: viewContext)
+                        isFavorited.toggle()
+                    }
+                } label: {
+                    Image(systemName: isFavorited ? "star.fill" : "star")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(isFavorited ? .yellow : AppTheme.Colors.textSecondary)
+                        .scaleEffect(isFavorited ? 1.1 : 1.0)
+                }
+                .buttonStyle(.plain)
             }
 
+            // Description preview
             if !entity.descriptionText.isEmpty {
                 Text(entity.descriptionText)
-                    .font(.callout)
+                    .font(AppTheme.Typography.footnote())
                     .foregroundColor(AppTheme.Colors.textSecondary)
                     .lineLimit(2)
+                    .padding(.leading, 62)
             }
 
-            metadataFooter
+            // Tags + date footer
+            HStack(spacing: AppTheme.Spacing.sm) {
+                // Tag chips (max 2)
+                let tags = entity.tagList.prefix(2)
+                if !tags.isEmpty {
+                    ForEach(Array(tags), id: \.self) { tag in
+                        TagChip(tag: tag)
+                    }
+                    if entity.tagList.count > 2 {
+                        Text("+\(entity.tagList.count - 2)")
+                            .font(AppTheme.Typography.caption())
+                            .foregroundColor(AppTheme.Colors.textSecondary)
+                    }
+                }
+
+                Spacer()
+
+                Text(Self.dateFormatter.string(from: entity.dateCreated))
+                    .font(AppTheme.Typography.caption())
+                    .foregroundColor(AppTheme.Colors.textSecondary)
+            }
+            .padding(.leading, 62)
         }
         .padding(AppTheme.Spacing.md)
-        .appCardStyle()
-        .onAppear { isFavorited = entity.isFavorite }
-    }
-
-    private var domainIcon: some View {
-        ZStack {
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    AppTheme.Colors.primaryBlue,
-                    AppTheme.Colors.deepBlue
-                ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .frame(width: 48, height: 48)
-            .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
-
-            Text(domainInitial)
-                .font(.system(size: 18, weight: .bold, design: .default))
-                .foregroundColor(.white)
-        }
-    }
-
-    private var domainInitial: String {
-        let domain = URLValidator.extractDomain(from: entity.url)
-        return String(domain.prefix(1)).uppercased()
-    }
-
-    private var starButton: some View {
-        Button {
-            try? entity.toggleFavorite(in: viewContext)
-            isFavorited.toggle()
-        } label: {
-            Image(systemName: isFavorited ? "star.fill" : "star")
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(isFavorited ? .yellow : AppTheme.Colors.textSecondary)
-        }
-        .buttonStyle(.plain)
-    }
-
-    private var metadataFooter: some View {
-        HStack(spacing: AppTheme.Spacing.sm) {
-            Label(
-                formattedDate,
-                systemImage: "calendar"
-            )
-            .font(.caption2)
-            .foregroundColor(AppTheme.Colors.textSecondary)
-
-            Spacer()
-
-            if entity.isFavorite {
-                Label("Favorited", systemImage: "star.fill")
-                    .font(.caption2)
-                    .foregroundColor(.yellow)
-            }
-        }
-    }
-
-    private var formattedDate: String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .short
-        return formatter.string(from: entity.dateCreated)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous))
+        .shadow(color: Color.black.opacity(0.055), radius: 10, x: 0, y: 3)
     }
 }
 

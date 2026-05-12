@@ -15,7 +15,7 @@ struct BookmarkFormView: View {
         self.onSave = onSave
     }
 
-    enum FormField { case url, title, description, tagInput }
+    enum FormField { case url, title, notes, tagInput }
 
     var body: some View {
         NavigationStack {
@@ -29,8 +29,8 @@ struct BookmarkFormView: View {
                         folderCard
                         tagsCard
                         notesCard
-                        privacyCard
-                        Spacer().frame(height: AppTheme.Spacing.xxl)
+                        PrivacyInfoCard()
+                        Spacer().frame(height: AppTheme.Spacing.xl)
                     }
                     .padding(.horizontal, AppTheme.Spacing.lg)
                     .padding(.top, AppTheme.Spacing.md)
@@ -60,7 +60,6 @@ struct BookmarkFormView: View {
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
                     Button(AppStrings.done) { focusedField = nil }
-                        .fontWeight(.medium)
                         .foregroundColor(AppTheme.Colors.primaryBlue)
                 }
             }
@@ -77,7 +76,7 @@ struct BookmarkFormView: View {
     private var urlCard: some View {
         FormCard {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                FormSectionLabel(text: AppStrings.websiteURL, icon: "link")
+                SectionLabel(text: AppStrings.websiteURL, icon: "link")
 
                 HStack(spacing: AppTheme.Spacing.sm) {
                     Image(systemName: "link")
@@ -93,36 +92,29 @@ struct BookmarkFormView: View {
                         .submitLabel(.next)
                         .onSubmit { focusedField = .title }
 
+                    Spacer()
+
                     if !viewModel.url.isEmpty {
-                        Button {
-                            viewModel.url = ""
-                        } label: {
+                        Button { viewModel.url = "" } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .foregroundColor(AppTheme.Colors.textSecondary)
-                                .font(.system(size: 16))
                         }
                         .buttonStyle(.plain)
                     } else {
-                        Button(AppStrings.paste) {
-                            viewModel.pasteFromClipboard()
-                        }
-                        .font(.callout)
-                        .fontWeight(.semibold)
-                        .foregroundColor(AppTheme.Colors.primaryBlue)
+                        Button(AppStrings.paste) { viewModel.pasteFromClipboard() }
+                            .font(AppTheme.Typography.footnote(weight: .semibold))
+                            .foregroundColor(AppTheme.Colors.primaryBlue)
                     }
                 }
-                .padding(AppTheme.Spacing.md)
-                .background(AppTheme.Colors.paleBackground)
-                .cornerRadius(AppTheme.Radius.sm)
+                .appInputStyle()
 
                 if let error = viewModel.urlError {
-                    HStack(spacing: AppTheme.Spacing.xs) {
+                    HStack(spacing: 4) {
                         Image(systemName: "exclamationmark.circle.fill")
-                            .font(.caption)
                         Text(error)
-                            .font(.caption)
                     }
-                    .foregroundColor(.red)
+                    .font(AppTheme.Typography.caption())
+                    .foregroundColor(AppTheme.Colors.errorRed)
                 }
             }
         }
@@ -133,7 +125,7 @@ struct BookmarkFormView: View {
     private var titleCard: some View {
         FormCard {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                FormSectionLabel(text: AppStrings.title, icon: "textformat")
+                SectionLabel(text: AppStrings.title, icon: "textformat")
 
                 HStack(spacing: AppTheme.Spacing.sm) {
                     Image(systemName: "character.cursor.ibeam")
@@ -143,14 +135,12 @@ struct BookmarkFormView: View {
                     TextField(viewModel.titlePlaceholder, text: $viewModel.title)
                         .focused($focusedField, equals: .title)
                         .submitLabel(.next)
-                        .onSubmit { focusedField = .description }
+                        .onSubmit { focusedField = .notes }
                 }
-                .padding(AppTheme.Spacing.md)
-                .background(AppTheme.Colors.paleBackground)
-                .cornerRadius(AppTheme.Radius.sm)
+                .appInputStyle()
 
                 Text(AppStrings.leaveBlankForAutoFill)
-                    .font(.caption)
+                    .font(AppTheme.Typography.caption())
                     .foregroundColor(AppTheme.Colors.textSecondary)
             }
         }
@@ -162,7 +152,7 @@ struct BookmarkFormView: View {
         FormCard {
             HStack(spacing: AppTheme.Spacing.md) {
                 ZStack {
-                    RoundedRectangle(cornerRadius: AppTheme.Radius.sm)
+                    RoundedRectangle(cornerRadius: 8)
                         .fill(AppTheme.Colors.lightBlue)
                         .frame(width: 32, height: 32)
                     Image(systemName: "folder.fill")
@@ -170,22 +160,19 @@ struct BookmarkFormView: View {
                         .foregroundColor(AppTheme.Colors.primaryBlue)
                 }
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 1) {
                     Text("Folder")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
+                        .font(AppTheme.Typography.footnote(weight: .semibold))
                         .foregroundColor(AppTheme.Colors.textPrimary)
-
-                    Text("Unsorted")
-                        .font(.caption)
+                    Text(viewModel.folderName.isEmpty ? "Unsorted" : viewModel.folderName)
+                        .font(AppTheme.Typography.caption())
                         .foregroundColor(AppTheme.Colors.textSecondary)
                 }
 
                 Spacer()
 
                 Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .fontWeight(.semibold)
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(AppTheme.Colors.textSecondary)
             }
         }
@@ -196,14 +183,12 @@ struct BookmarkFormView: View {
     private var tagsCard: some View {
         FormCard {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                FormSectionLabel(text: "Tags", icon: "tag.fill")
+                SectionLabel(text: "Tags", icon: "tag.fill")
 
                 if !viewModel.tags.isEmpty {
                     FlowLayout(spacing: AppTheme.Spacing.sm) {
                         ForEach(viewModel.tags, id: \.self) { tag in
-                            TagChipView(tag: tag) {
-                                viewModel.removeTag(tag)
-                            }
+                            TagChip(tag: tag) { viewModel.removeTag(tag) }
                         }
                     }
                 }
@@ -217,10 +202,18 @@ struct BookmarkFormView: View {
                         .focused($focusedField, equals: .tagInput)
                         .submitLabel(.done)
                         .onSubmit { viewModel.addTag() }
+
+                    if !viewModel.tagInput.isEmpty {
+                        Button("Add") { viewModel.addTag() }
+                            .font(AppTheme.Typography.footnote(weight: .semibold))
+                            .foregroundColor(AppTheme.Colors.primaryBlue)
+                    }
                 }
-                .padding(AppTheme.Spacing.md)
-                .background(AppTheme.Colors.paleBackground)
-                .cornerRadius(AppTheme.Radius.sm)
+                .appInputStyle()
+
+                Text("Press return or tap Add to save a tag.")
+                    .font(AppTheme.Typography.caption())
+                    .foregroundColor(AppTheme.Colors.textSecondary)
             }
         }
     }
@@ -230,7 +223,7 @@ struct BookmarkFormView: View {
     private var notesCard: some View {
         FormCard {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                FormSectionLabel(text: AppStrings.notes, icon: "note.text")
+                SectionLabel(text: AppStrings.notes, icon: "note.text")
 
                 HStack(alignment: .top, spacing: AppTheme.Spacing.sm) {
                     Image(systemName: "text.alignleft")
@@ -239,49 +232,16 @@ struct BookmarkFormView: View {
                         .padding(.top, 2)
 
                     TextField(AppStrings.notesPlaceholder, text: $viewModel.description, axis: .vertical)
-                        .focused($focusedField, equals: .description)
-                        .lineLimit(3...6)
+                        .focused($focusedField, equals: .notes)
+                        .lineLimit(3...7)
                 }
-                .padding(AppTheme.Spacing.md)
-                .background(AppTheme.Colors.paleBackground)
-                .cornerRadius(AppTheme.Radius.sm)
+                .appInputStyle()
 
                 Text(AppStrings.visibleWithoutOpening)
-                    .font(.caption)
+                    .font(AppTheme.Typography.caption())
                     .foregroundColor(AppTheme.Colors.textSecondary)
             }
         }
-    }
-
-    // MARK: - Privacy Card
-
-    private var privacyCard: some View {
-        HStack(spacing: AppTheme.Spacing.md) {
-            ZStack {
-                Circle()
-                    .fill(AppTheme.Colors.lightBlue)
-                    .frame(width: 36, height: 36)
-                Image(systemName: "lock.shield.fill")
-                    .font(.system(size: 16))
-                    .foregroundColor(AppTheme.Colors.primaryBlue)
-            }
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Private & Secure")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(AppTheme.Colors.textPrimary)
-
-                Text("Your bookmarks stay on your device.")
-                    .font(.caption)
-                    .foregroundColor(AppTheme.Colors.textSecondary)
-            }
-
-            Spacer()
-        }
-        .padding(AppTheme.Spacing.md)
-        .background(AppTheme.Colors.lightBlue.opacity(0.5))
-        .cornerRadius(AppTheme.Radius.md)
     }
 
     // MARK: - Save
@@ -296,107 +256,6 @@ struct BookmarkFormView: View {
                 viewModel.saveError = error.localizedDescription
             }
         }
-    }
-}
-
-// MARK: - Reusable Form Components
-
-struct FormCard<Content: View>: View {
-    let content: Content
-
-    init(@ViewBuilder content: () -> Content) {
-        self.content = content()
-    }
-
-    var body: some View {
-        content
-            .padding(AppTheme.Spacing.md)
-            .background(Color.white)
-            .cornerRadius(AppTheme.Radius.md)
-            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
-    }
-}
-
-struct FormSectionLabel: View {
-    let text: String
-    let icon: String
-
-    var body: some View {
-        Label(text, systemImage: icon)
-            .font(.subheadline)
-            .fontWeight(.semibold)
-            .foregroundColor(AppTheme.Colors.textPrimary)
-    }
-}
-
-struct TagChipView: View {
-    let tag: String
-    let onRemove: () -> Void
-
-    var body: some View {
-        HStack(spacing: 4) {
-            Text(tag)
-                .font(.caption)
-                .fontWeight(.medium)
-                .foregroundColor(AppTheme.Colors.primaryBlue)
-
-            Button(action: onRemove) {
-                Image(systemName: "xmark")
-                    .font(.system(size: 9, weight: .bold))
-                    .foregroundColor(AppTheme.Colors.primaryBlue)
-            }
-            .buttonStyle(.plain)
-        }
-        .padding(.horizontal, AppTheme.Spacing.sm)
-        .padding(.vertical, AppTheme.Spacing.xs)
-        .background(AppTheme.Colors.lightBlue)
-        .cornerRadius(12)
-    }
-}
-
-struct FlowLayout: Layout {
-    var spacing: CGFloat = 8
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let rows = computeRows(proposal: proposal, subviews: subviews)
-        let height = rows.map { $0.map { $0.size.height }.max() ?? 0 }.reduce(0) { $0 + $1 + spacing } - spacing
-        return CGSize(width: proposal.width ?? 0, height: max(height, 0))
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let rows = computeRows(proposal: proposal, subviews: subviews)
-        var y = bounds.minY
-        for row in rows {
-            var x = bounds.minX
-            let rowHeight = row.map { $0.size.height }.max() ?? 0
-            for item in row {
-                item.subview.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(item.size))
-                x += item.size.width + spacing
-            }
-            y += rowHeight + spacing
-        }
-    }
-
-    private struct SubviewItem {
-        let subview: LayoutSubview
-        let size: CGSize
-    }
-
-    private func computeRows(proposal: ProposedViewSize, subviews: Subviews) -> [[SubviewItem]] {
-        let maxWidth = proposal.width ?? 0
-        var rows: [[SubviewItem]] = [[]]
-        var rowWidth: CGFloat = 0
-
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            if rowWidth + size.width > maxWidth && !rows[rows.count - 1].isEmpty {
-                rows.append([])
-                rowWidth = 0
-            }
-            rows[rows.count - 1].append(SubviewItem(subview: subview, size: size))
-            rowWidth += size.width + spacing
-        }
-        return rows
     }
 }
 

@@ -4,6 +4,7 @@ struct SettingsView: View {
     @AppStorage("defaultSortOption") private var defaultSortKey = BookmarkSortOption.dateCreatedNewest.rawValue
     @AppStorage("appLanguage") private var appLanguage = "en"
     @State private var showClearAlert = false
+    @State private var openLinksIn = "Safari"
 
     var body: some View {
         NavigationStack {
@@ -12,14 +13,12 @@ struct SettingsView: View {
 
                 ScrollView {
                     VStack(spacing: AppTheme.Spacing.xl) {
-                        profileHeader
-
+                        appHeader
                         generalSection
                         appearanceSection
                         dataSection
                         aboutSection
-
-                        Spacer().frame(height: AppTheme.Spacing.xxl)
+                        Spacer().frame(height: AppTheme.Spacing.xxxl)
                     }
                     .padding(.horizontal, AppTheme.Spacing.lg)
                     .padding(.top, AppTheme.Spacing.md)
@@ -31,166 +30,132 @@ struct SettingsView: View {
                 Button("Clear All", role: .destructive) { }
                 Button(AppStrings.cancel, role: .cancel) { }
             } message: {
-                Text("This will permanently delete all your bookmarks. This action cannot be undone.")
+                Text("This will permanently delete all bookmarks and cannot be undone.")
             }
         }
     }
 
-    // MARK: - Profile Header
+    // MARK: - App Header Card
 
-    private var profileHeader: some View {
+    private var appHeader: some View {
         HStack(spacing: AppTheme.Spacing.md) {
             ZStack {
-                LinearGradient(
-                    gradient: Gradient(colors: [AppTheme.Colors.primaryBlue, AppTheme.Colors.deepBlue]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .frame(width: 56, height: 56)
-                .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
-
+                RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous)
+                    .fill(AppTheme.Gradients.primary)
+                    .frame(width: 58, height: 58)
                 Image(systemName: "bookmark.fill")
-                    .font(.system(size: 24))
+                    .font(.system(size: 26))
                     .foregroundColor(.white)
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("Bookmark")
-                    .font(.title3)
-                    .fontWeight(.bold)
+                    .font(AppTheme.Typography.title3(weight: .bold))
                     .foregroundColor(AppTheme.Colors.textPrimary)
-
-                Text("Your personal bookmark manager")
-                    .font(.caption)
+                Text("Your private bookmark manager")
+                    .font(AppTheme.Typography.caption())
                     .foregroundColor(AppTheme.Colors.textSecondary)
             }
 
             Spacer()
         }
-        .padding(AppTheme.Spacing.md)
-        .background(Color.white)
-        .cornerRadius(AppTheme.Radius.lg)
-        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+        .appCardStyle(padding: AppTheme.Spacing.md)
     }
 
-    // MARK: - General Section
+    // MARK: - General
 
     private var generalSection: some View {
-        SettingsSection(title: "General", icon: "slider.horizontal.3") {
+        SettingsGroupCard(title: "General") {
             VStack(spacing: 0) {
-                SettingsPickerRow(
-                    icon: "arrow.up.arrow.down",
-                    iconColor: AppTheme.Colors.primaryBlue,
+                settingsPickerRow(
+                    icon: "arrow.up.arrow.down", iconColor: AppTheme.Colors.primaryBlue,
                     label: AppStrings.defaultSort,
                     selection: $defaultSortKey,
                     options: BookmarkSortOption.allCases.map { ($0.rawValue, $0.rawValue) }
                 )
-
                 SettingsDivider()
-
-                SettingsPickerRow(
-                    icon: "globe",
-                    iconColor: Color.teal,
+                settingsPickerRow(
+                    icon: "globe", iconColor: Color.teal,
                     label: "Open Links In",
-                    selection: .constant("Safari"),
+                    selection: $openLinksIn,
                     options: [("Safari", "Safari"), ("In-App Browser", "In-App Browser")]
                 )
             }
         }
     }
 
-    // MARK: - Appearance Section
+    // MARK: - Appearance
 
     private var appearanceSection: some View {
-        SettingsSection(title: "Appearance", icon: "paintbrush.fill") {
-            VStack(spacing: 0) {
-                VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-                    HStack {
-                        SettingsIconBox(systemName: "globe", color: AppTheme.Colors.deepBlue)
-                        Text(AppStrings.language)
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundColor(AppTheme.Colors.textPrimary)
-                        Spacer()
-                    }
-                    .padding(.horizontal, AppTheme.Spacing.md)
-                    .padding(.top, AppTheme.Spacing.md)
+        SettingsGroupCard(title: "Appearance") {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+                HStack {
+                    SettingsIcon(name: "globe", color: AppTheme.Colors.deepBlue)
+                    Text(AppStrings.language)
+                        .font(AppTheme.Typography.subheadline(weight: .medium))
+                        .foregroundColor(AppTheme.Colors.textPrimary)
+                    Spacer()
+                }
 
-                    Picker(AppStrings.language, selection: $appLanguage) {
-                        Text(AppStrings.english).tag("en")
-                        Text(AppStrings.japanese).tag("ja")
-                    }
-                    .pickerStyle(.segmented)
-                    .padding(.horizontal, AppTheme.Spacing.md)
-                    .padding(.bottom, AppTheme.Spacing.md)
+                Picker(AppStrings.language, selection: $appLanguage) {
+                    Text(AppStrings.english).tag("en")
+                    Text(AppStrings.japanese).tag("ja")
+                }
+                .pickerStyle(.segmented)
+            }
+            .padding(AppTheme.Spacing.md)
+        }
+    }
+
+    // MARK: - Data
+
+    private var dataSection: some View {
+        SettingsGroupCard(title: "Data") {
+            VStack(spacing: 0) {
+                settingsActionRow(icon: "square.and.arrow.up", iconColor: Color.indigo,
+                                  label: "Export Bookmarks") { }
+                SettingsDivider()
+                settingsActionRow(icon: "square.and.arrow.down", iconColor: Color.teal,
+                                  label: "Import Bookmarks") { }
+                SettingsDivider()
+                settingsActionRow(icon: "trash.fill", iconColor: Color.red,
+                                  label: "Clear All Bookmarks", isDestructive: true) {
+                    showClearAlert = true
                 }
             }
         }
     }
 
-    // MARK: - Data Section
-
-    private var dataSection: some View {
-        SettingsSection(title: "Data", icon: "cylinder.split.1x2.fill") {
-            VStack(spacing: 0) {
-                SettingsActionRow(
-                    icon: "square.and.arrow.up",
-                    iconColor: Color.indigo,
-                    label: "Export Bookmarks"
-                ) { }
-
-                SettingsDivider()
-
-                SettingsActionRow(
-                    icon: "square.and.arrow.down",
-                    iconColor: Color.teal,
-                    label: "Import Bookmarks"
-                ) { }
-
-                SettingsDivider()
-
-                SettingsActionRow(
-                    icon: "trash.fill",
-                    iconColor: .red,
-                    label: "Clear All Bookmarks",
-                    isDestructive: true
-                ) { showClearAlert = true }
-            }
-        }
-    }
-
-    // MARK: - About Section
+    // MARK: - About
 
     private var aboutSection: some View {
-        SettingsSection(title: AppStrings.about, icon: "info.circle.fill") {
+        SettingsGroupCard(title: AppStrings.about) {
             VStack(spacing: 0) {
+                // Version row
                 HStack {
-                    SettingsIconBox(systemName: "app.badge", color: AppTheme.Colors.primaryBlue)
+                    SettingsIcon(name: "app.badge.fill", color: AppTheme.Colors.primaryBlue)
                     Text(AppStrings.version)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
+                        .font(AppTheme.Typography.subheadline(weight: .medium))
                         .foregroundColor(AppTheme.Colors.textPrimary)
                     Spacer()
                     Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0")
-                        .font(.subheadline)
+                        .font(AppTheme.Typography.subheadline())
                         .foregroundColor(AppTheme.Colors.textSecondary)
                 }
                 .padding(AppTheme.Spacing.md)
 
                 SettingsDivider()
 
-                if let url = URL(string: "mailto:support@example.com") {
-                    Link(destination: url) {
+                if let mailto = URL(string: "mailto:support@example.com") {
+                    Link(destination: mailto) {
                         HStack {
-                            SettingsIconBox(systemName: "envelope.fill", color: Color.orange)
+                            SettingsIcon(name: "envelope.fill", color: Color.orange)
                             Text(AppStrings.contactSupport)
-                                .font(.subheadline)
-                                .fontWeight(.medium)
+                                .font(AppTheme.Typography.subheadline(weight: .medium))
                                 .foregroundColor(AppTheme.Colors.textPrimary)
                             Spacer()
                             Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .fontWeight(.semibold)
+                                .font(.system(size: 12, weight: .semibold))
                                 .foregroundColor(AppTheme.Colors.textSecondary)
                         }
                         .padding(AppTheme.Spacing.md)
@@ -199,56 +164,81 @@ struct SettingsView: View {
 
                 SettingsDivider()
 
-                SettingsActionRow(
-                    icon: "hand.raised.fill",
-                    iconColor: Color.purple,
-                    label: "Privacy Policy"
-                ) { }
+                settingsActionRow(icon: "hand.raised.fill", iconColor: Color.purple,
+                                  label: "Privacy Policy") { }
             }
         }
     }
+
+    // MARK: - Reusable Row Builders
+
+    private func settingsActionRow(icon: String, iconColor: Color, label: String,
+                                   isDestructive: Bool = false, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack {
+                SettingsIcon(name: icon, color: iconColor)
+                Text(label)
+                    .font(AppTheme.Typography.subheadline(weight: .medium))
+                    .foregroundColor(isDestructive ? .red : AppTheme.Colors.textPrimary)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(AppTheme.Colors.textSecondary)
+            }
+            .padding(AppTheme.Spacing.md)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func settingsPickerRow(icon: String, iconColor: Color, label: String,
+                                   selection: Binding<String>, options: [(String, String)]) -> some View {
+        HStack {
+            SettingsIcon(name: icon, color: iconColor)
+            Picker(label, selection: selection) {
+                ForEach(options, id: \.1) { opt in
+                    Text(opt.0).tag(opt.1)
+                }
+            }
+            .tint(AppTheme.Colors.primaryBlue)
+        }
+        .padding(AppTheme.Spacing.md)
+    }
 }
 
-// MARK: - Reusable Settings Components
+// MARK: - Local Helper Components (Settings-scoped)
 
-struct SettingsSection<Content: View>: View {
+struct SettingsGroupCard<Content: View>: View {
     let title: String
-    let icon: String
     let content: Content
 
-    init(title: String, icon: String, @ViewBuilder content: () -> Content) {
+    init(title: String, @ViewBuilder content: () -> Content) {
         self.title = title
-        self.icon = icon
         self.content = content()
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
-            Label(title, systemImage: icon)
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundColor(AppTheme.Colors.textSecondary)
-                .textCase(.uppercase)
+            SectionHeaderLabel(title: title)
                 .padding(.horizontal, AppTheme.Spacing.xs)
 
             content
                 .background(Color.white)
-                .cornerRadius(AppTheme.Radius.md)
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
                 .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
         }
     }
 }
 
-struct SettingsIconBox: View {
-    let systemName: String
+struct SettingsIcon: View {
+    let name: String
     let color: Color
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 7)
+            RoundedRectangle(cornerRadius: 7, style: .continuous)
                 .fill(color)
                 .frame(width: 30, height: 30)
-            Image(systemName: systemName)
+            Image(systemName: name)
                 .font(.system(size: 14))
                 .foregroundColor(.white)
         }
@@ -257,56 +247,7 @@ struct SettingsIconBox: View {
 
 struct SettingsDivider: View {
     var body: some View {
-        Divider()
-            .padding(.leading, 54)
-    }
-}
-
-struct SettingsActionRow: View {
-    let icon: String
-    let iconColor: Color
-    let label: String
-    var isDestructive: Bool = false
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack {
-                SettingsIconBox(systemName: icon, color: iconColor)
-                Text(label)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundColor(isDestructive ? .red : AppTheme.Colors.textPrimary)
-                Spacer()
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundColor(AppTheme.Colors.textSecondary)
-            }
-            .padding(AppTheme.Spacing.md)
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-struct SettingsPickerRow: View {
-    let icon: String
-    let iconColor: Color
-    let label: String
-    @Binding var selection: String
-    let options: [(label: String, value: String)]
-
-    var body: some View {
-        HStack {
-            SettingsIconBox(systemName: icon, color: iconColor)
-            Picker(label, selection: $selection) {
-                ForEach(options, id: \.value) { option in
-                    Text(option.label).tag(option.value)
-                }
-            }
-            .tint(AppTheme.Colors.primaryBlue)
-        }
-        .padding(AppTheme.Spacing.md)
+        Divider().padding(.leading, 50)
     }
 }
 

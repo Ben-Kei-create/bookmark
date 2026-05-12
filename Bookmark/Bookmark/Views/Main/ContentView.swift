@@ -9,90 +9,85 @@ struct ContentView: View {
 
         var icon: String {
             switch self {
-            case .bookmarks: return "bookmark.fill"
-            case .settings: return "gear"
+            case .bookmarks: "bookmark.fill"
+            case .settings:  "gear"
             }
         }
 
         var label: String {
             switch self {
-            case .bookmarks: return AppStrings.bookmarks
-            case .settings: return AppStrings.settings
+            case .bookmarks: AppStrings.bookmarks
+            case .settings:  AppStrings.settings
             }
         }
     }
 
     var body: some View {
         ZStack(alignment: .bottom) {
+            // Content
             Group {
                 switch selectedTab {
-                case .bookmarks:
-                    BookmarkListView()
-                case .settings:
-                    SettingsView()
+                case .bookmarks: BookmarkListView()
+                case .settings:  SettingsView()
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
+            // Floating Tab Bar
             floatingTabBar
         }
         .ignoresSafeArea(edges: .bottom)
     }
 
+    // MARK: - Tab Bar
+
     private var floatingTabBar: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: AppTheme.Spacing.xs) {
             ForEach(AppTab.allCases, id: \.label) { tab in
-                tabButton(for: tab)
+                tabButton(tab)
             }
         }
-        .padding(.horizontal, AppTheme.Spacing.sm)
-        .padding(.vertical, AppTheme.Spacing.sm)
+        .padding(6)
         .background(
             Capsule()
                 .fill(Color.white)
-                .shadow(
-                    color: Color.black.opacity(0.12),
-                    radius: 24,
-                    x: 0,
-                    y: 8
-                )
+                .shadow(color: Color.black.opacity(0.10), radius: 20, x: 0, y: 8)
         )
-        .padding(.horizontal, AppTheme.Spacing.xxl)
+        .padding(.horizontal, 48)
         .padding(.bottom, 28)
     }
 
     @ViewBuilder
-    private func tabButton(for tab: AppTab) -> some View {
+    private func tabButton(_ tab: AppTab) -> some View {
         let isSelected = selectedTab == tab
 
         Button {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+            withAnimation(.spring(response: 0.28, dampingFraction: 0.70)) {
                 selectedTab = tab
             }
         } label: {
-            HStack(spacing: AppTheme.Spacing.xs) {
+            HStack(spacing: 6) {
                 Image(systemName: tab.icon)
                     .font(.system(size: 15, weight: .semibold))
 
                 if isSelected {
                     Text(tab.label)
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .transition(.opacity.combined(with: .scale(scale: 0.85)))
+                        .font(AppTheme.Typography.footnote(weight: .semibold))
+                        .transition(.asymmetric(
+                            insertion: .opacity.combined(with: .scale(scale: 0.85, anchor: .leading)),
+                            removal:   .opacity.combined(with: .scale(scale: 0.85, anchor: .leading))
+                        ))
                 }
             }
-            .foregroundColor(
-                isSelected ? AppTheme.Colors.primaryBlue : AppTheme.Colors.textSecondary
-            )
-            .padding(.horizontal, isSelected ? AppTheme.Spacing.lg : AppTheme.Spacing.md)
-            .padding(.vertical, AppTheme.Spacing.sm)
+            .foregroundColor(isSelected ? AppTheme.Colors.primaryBlue : AppTheme.Colors.textSecondary)
+            .padding(.vertical, 10)
+            .padding(.horizontal, isSelected ? 18 : 14)
             .background(
-                Capsule()
-                    .fill(isSelected ? AppTheme.Colors.lightBlue : Color.clear)
+                Capsule().fill(isSelected ? AppTheme.Colors.lightBlue : Color.clear)
             )
-            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
         }
         .buttonStyle(.plain)
+        .animation(.spring(response: 0.28, dampingFraction: 0.70), value: isSelected)
     }
 }
 

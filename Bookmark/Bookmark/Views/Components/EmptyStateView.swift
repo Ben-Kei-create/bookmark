@@ -1,149 +1,124 @@
 import SwiftUI
 
 struct EmptyStateView: View {
-    var action: () -> Void
+    let action: () -> Void
+    @State private var appeared = false
 
     var body: some View {
         VStack(spacing: 0) {
-            Spacer().frame(height: AppTheme.Spacing.lg)
+            Spacer()
 
             VStack(spacing: AppTheme.Spacing.xl) {
                 illustration
+                    .scaleEffect(appeared ? 1 : 0.92)
+                    .opacity(appeared ? 1 : 0)
 
-                headlineAndDescription
+                headlineBlock
+                    .opacity(appeared ? 1 : 0)
+                    .offset(y: appeared ? 0 : 12)
 
-                Spacer().frame(height: AppTheme.Spacing.lg)
-
-                primaryButton
-                    .padding(.horizontal, AppTheme.Spacing.lg)
-
-                tipMessage
-                    .padding(.horizontal, AppTheme.Spacing.lg)
+                VStack(spacing: AppTheme.Spacing.sm) {
+                    PrimaryGradientButton("Add Your First Bookmark", icon: "plus", action: action)
+                    tipCard
+                }
+                .opacity(appeared ? 1 : 0)
+                .offset(y: appeared ? 0 : 16)
             }
-            .padding(.horizontal, AppTheme.Spacing.lg)
+            .padding(.horizontal, AppTheme.Spacing.xl)
 
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .onAppear {
+            withAnimation(.spring(response: 0.55, dampingFraction: 0.78).delay(0.05)) {
+                appeared = true
+            }
+        }
     }
+
+    // MARK: - Illustration
 
     private var illustration: some View {
-        VStack(spacing: 0) {
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                AppTheme.Colors.lightBlue.opacity(0.6),
-                                AppTheme.Colors.primaryBlue.opacity(0.15)
-                            ]),
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
+        ZStack {
+            // Outer pale ring
+            Circle()
+                .fill(AppTheme.Colors.lightBlue.opacity(0.5))
+                .frame(width: 136, height: 136)
+
+            // Inner gradient circle
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            AppTheme.Colors.lightBlue,
+                            AppTheme.Colors.primaryBlue.opacity(0.18)
+                        ],
+                        center: .center,
+                        startRadius: 0,
+                        endRadius: 60
                     )
-                    .frame(width: 120, height: 120)
+                )
+                .frame(width: 108, height: 108)
 
-                Image(systemName: "bookmark.fill")
-                    .font(.system(size: 56))
-                    .foregroundColor(AppTheme.Colors.primaryBlue)
-                    .symbolRenderingMode(.hierarchical)
-            }
-            .padding(.bottom, AppTheme.Spacing.lg)
+            // Bookmark icon
+            Image(systemName: "bookmark.fill")
+                .font(.system(size: 52, weight: .semibold))
+                .foregroundStyle(AppTheme.Gradients.primary)
+                .symbolRenderingMode(.hierarchical)
 
-            decorativeElements
+            // Decorative sparkles
+            sparkle(offset: CGSize(width: 52, height: -42), size: 10, opacity: 0.55)
+            sparkle(offset: CGSize(width: -50, height: -28), size: 7, opacity: 0.38)
+            sparkle(offset: CGSize(width: 38, height: 50), size: 8, opacity: 0.42)
         }
     }
 
-    private var decorativeElements: some View {
-        HStack(spacing: AppTheme.Spacing.lg) {
-            Circle()
-                .fill(AppTheme.Colors.lightBlue.opacity(0.4))
-                .frame(width: 8, height: 8)
-
-            Spacer()
-
-            Circle()
-                .fill(AppTheme.Colors.primaryBlue.opacity(0.3))
-                .frame(width: 6, height: 6)
-        }
-        .padding(.horizontal, AppTheme.Spacing.xxl)
-        .frame(height: 12)
+    @ViewBuilder
+    private func sparkle(offset: CGSize, size: CGFloat, opacity: Double) -> some View {
+        Image(systemName: "sparkle")
+            .font(.system(size: size))
+            .foregroundColor(AppTheme.Colors.primaryBlue)
+            .opacity(opacity)
+            .offset(offset)
     }
 
-    private var headlineAndDescription: some View {
-        VStack(spacing: AppTheme.Spacing.md) {
+    // MARK: - Headline
+
+    private var headlineBlock: some View {
+        VStack(spacing: AppTheme.Spacing.sm) {
             VStack(spacing: 2) {
                 Text("Your bookmarks,")
-                    .font(.system(size: 28, weight: .bold, design: .default))
+                    .font(AppTheme.Typography.title(weight: .bold))
                     .foregroundColor(AppTheme.Colors.textPrimary)
-
-                HStack(spacing: 0) {
-                    Text("always within reach")
-                        .font(.system(size: 28, weight: .bold, design: .default))
-                        .foregroundColor(AppTheme.Colors.primaryBlue)
-
-                    Text(".")
-                        .font(.system(size: 28, weight: .bold, design: .default))
-                        .foregroundColor(AppTheme.Colors.primaryBlue)
-                }
+                Text("always within reach.")
+                    .font(AppTheme.Typography.title(weight: .bold))
+                    .foregroundColor(AppTheme.Colors.primaryBlue)
             }
+            .multilineTextAlignment(.center)
 
-            Text("Save your favorite sites, organize them with ease, and access them anytime.")
-                .font(.subheadline)
+            Text("Save your favorite sites, organize them with ease, and access them anytime — all stored privately on your device.")
+                .font(AppTheme.Typography.subheadline())
                 .foregroundColor(AppTheme.Colors.textSecondary)
                 .multilineTextAlignment(.center)
-                .lineSpacing(1.5)
+                .lineSpacing(2)
         }
     }
 
-    private var primaryButton: some View {
-        Button(action: action) {
-            HStack(spacing: AppTheme.Spacing.sm) {
-                Image(systemName: "plus")
-                    .font(.system(size: 16, weight: .semibold))
-                Text(AppStrings.addYourFirstBookmark)
-                    .font(.headline)
-                    .fontWeight(.semibold)
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 54)
-            .foregroundColor(.white)
-            .background(
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        AppTheme.Colors.primaryBlue,
-                        AppTheme.Colors.deepBlue
-                    ]),
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .cornerRadius(27)
-            .shadow(
-                color: AppTheme.Colors.primaryBlue.opacity(0.3),
-                radius: 12,
-                x: 0,
-                y: 6
-            )
-        }
-        .buttonStyle(.plain)
-    }
+    // MARK: - Tip
 
-    private var tipMessage: some View {
+    private var tipCard: some View {
         HStack(spacing: AppTheme.Spacing.sm) {
             Image(systemName: "lightbulb.fill")
-                .font(.caption)
+                .font(.system(size: 13))
                 .foregroundColor(AppTheme.Colors.primaryBlue)
-
-            Text("Save and organize your links in one secure place.")
-                .font(.caption)
+            Text("Tip: Tap ⭐ on any bookmark to mark it as a favorite.")
+                .font(AppTheme.Typography.caption(weight: .medium))
                 .foregroundColor(AppTheme.Colors.textSecondary)
-
             Spacer()
         }
         .padding(AppTheme.Spacing.md)
         .background(AppTheme.Colors.lightBlue.opacity(0.5))
-        .cornerRadius(AppTheme.Radius.md)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
     }
 }
 
