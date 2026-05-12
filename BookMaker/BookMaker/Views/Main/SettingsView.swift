@@ -120,7 +120,7 @@ struct SettingsView: View {
                 SettingsDivider()
                 settingsActionRow(icon: "trash.fill", iconColor: Color.red,
                                   label: AppStrings.clearAllBookmarks, isDestructive: true) {
-//                    showClearAlert = true
+                    showClearAlert = true
                 }
             }
         }
@@ -131,7 +131,6 @@ struct SettingsView: View {
     private var aboutSection: some View {
         SettingsGroupCard(title: AppStrings.about) {
             VStack(spacing: 0) {
-                // Version row
                 HStack {
                     SettingsIcon(name: "app.badge.fill", color: AppTheme.Colors.primaryBlue)
                     Text(AppStrings.version)
