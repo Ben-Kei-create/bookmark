@@ -54,7 +54,7 @@ struct BookmarkDetailView: View {
             BookmarkFormView(editing: entity)
         }
         .sheet(isPresented: $showShareSheet) {
-            ShareSheet(activityItems: [entity.url])
+            ShareSheet(items: [entity.url])
                 .presentationDetents([.medium, .large])
         }
         .alert(AppStrings.deleteBookmark, isPresented: $showDeleteAlert) {
@@ -260,13 +260,6 @@ struct BookmarkDetailView: View {
     }
 }
 
-struct ShareSheet: UIViewControllerRepresentable {
-    let activityItems: [Any]
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
-    }
-    func updateUIViewController(_ uvc: UIActivityViewController, context: Context) {}
-}
 
 #Preview {
     NavigationStack {
