@@ -6,6 +6,7 @@ struct BookmarkDetailView: View {
     @Environment(\.dismiss) private var dismiss
 
     @ObservedObject var entity: BookmarkEntity
+    @AppStorage("appLanguage") private var appLanguage = "en"
 
     @State private var showEditSheet = false
     @State private var showDeleteAlert = false

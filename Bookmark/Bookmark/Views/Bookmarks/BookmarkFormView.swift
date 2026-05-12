@@ -7,6 +7,7 @@ struct BookmarkFormView: View {
 
     @StateObject private var viewModel: BookmarkFormViewModel
     @FocusState private var focusedField: FormField?
+    @AppStorage("appLanguage") private var appLanguage = "en"
 
     var onSave: (() -> Void)?
 

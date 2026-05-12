@@ -10,6 +10,7 @@ struct BookmarkListView: View {
     )
     private var allBookmarks: FetchedResults<BookmarkEntity>
 
+    @AppStorage("appLanguage") private var appLanguage = "en"
     @State private var searchText = ""
     @State private var sortOption: BookmarkSortOption = .dateCreatedNewest
     @State private var showAddSheet = false

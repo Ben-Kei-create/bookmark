@@ -4,6 +4,7 @@ import CoreData
 struct BookmarkRow: View {
     let entity: BookmarkEntity
     @Environment(\.managedObjectContext) private var viewContext
+    @AppStorage("appLanguage") private var appLanguage = "en"
     @State private var isFavorited: Bool
 
     private static let dateFormatter: DateFormatter = {
