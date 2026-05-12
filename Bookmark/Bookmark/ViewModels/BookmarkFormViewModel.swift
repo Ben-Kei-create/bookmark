@@ -26,12 +26,11 @@ class BookmarkFormViewModel: ObservableObject {
         URLValidator.isValidURL(url)
     }
 
-    // Suggested title from domain when title is empty
     var titlePlaceholder: String {
         guard url.trimmingCharacters(in: .whitespaces).isEmpty == false,
-              URLValidator.isValidURL(url) else { return "Title" }
+              URLValidator.isValidURL(url) else { return AppStrings.title }
         let domain = URLValidator.extractDomain(from: URLValidator.normalizeURL(url))
-        return domain.isEmpty ? "Title" : domain
+        return domain.isEmpty ? AppStrings.title : domain
     }
 
     func validateURL() {
@@ -39,7 +38,7 @@ class BookmarkFormViewModel: ObservableObject {
         if trimmed.isEmpty {
             urlError = nil
         } else if !URLValidator.isValidURL(trimmed) {
-            urlError = "Enter a valid URL (e.g. apple.com)"
+            urlError = AppStrings.validURLRequired
         } else {
             urlError = nil
         }

@@ -55,7 +55,7 @@ enum BookmarkError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .duplicateURL: return "This URL is already bookmarked"
+        case .duplicateURL: return AppStrings.duplicateURL
         case .notFound: return "Bookmark not found"
         }
     }
