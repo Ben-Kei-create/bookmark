@@ -6,7 +6,13 @@ import Foundation
 class BookmarkFormViewModel: ObservableObject {
     @Published var url = ""
     @Published var title = ""
-    @Published var description = ""
+    @Published var description = "" {
+        didSet {
+            if description.count > maxDescriptionLength {
+                description = String(description.prefix(maxDescriptionLength))
+            }
+        }
+    }
     @Published var urlError: String?
     @Published var isSaving = false
     @Published var saveError: String?
@@ -15,6 +21,11 @@ class BookmarkFormViewModel: ObservableObject {
     @Published var folderName = "Unsorted"
 
     let editingEntity: BookmarkEntity?
+    let maxTags = 10
+    let maxDescriptionLength = 500
+
+    var descriptionRemaining: Int { maxDescriptionLength - description.count }
+    var isTagLimitReached: Bool { tags.count >= maxTags }
 
     init(editing entity: BookmarkEntity? = nil) {
         self.editingEntity = entity
@@ -29,7 +40,7 @@ class BookmarkFormViewModel: ObservableObject {
 
     func addTag() {
         let trimmed = tagInput.trimmingCharacters(in: .whitespaces)
-        guard !trimmed.isEmpty, !tags.contains(trimmed) else {
+        guard !trimmed.isEmpty, !tags.contains(trimmed), tags.count < maxTags else {
             tagInput = ""
             return
         }
@@ -42,7 +53,7 @@ class BookmarkFormViewModel: ObservableObject {
     }
 
     var isFormValid: Bool {
-        URLValidator.isValidURL(url)
+        URLValidator.isValidURL(url) && urlError == nil
     }
 
     var titlePlaceholder: String {
@@ -52,15 +63,34 @@ class BookmarkFormViewModel: ObservableObject {
         return domain.isEmpty ? AppStrings.title : domain
     }
 
-    func validateURL() {
+    func validateURL(in context: NSManagedObjectContext? = nil) {
         let trimmed = url.trimmingCharacters(in: .whitespaces)
-        if trimmed.isEmpty {
+        guard !trimmed.isEmpty else {
             urlError = nil
-        } else if !URLValidator.isValidURL(trimmed) {
-            urlError = AppStrings.validURLRequired
-        } else {
-            urlError = nil
+            return
         }
+        guard URLValidator.isValidURL(trimmed) else {
+            urlError = AppStrings.validURLRequired
+            return
+        }
+        guard let context else {
+            urlError = nil
+            return
+        }
+        let normalized = URLValidator.normalizeURL(trimmed)
+        let request = BookmarkEntity.fetchRequest()
+        request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [
+            NSPredicate(format: "url == %@", normalized),
+            NSPredicate(format: "isArchived == false")
+        ])
+        request.fetchLimit = 1
+        if let existing = try? context.fetch(request).first {
+            if editingEntity == nil || existing.objectID != editingEntity!.objectID {
+                urlError = AppStrings.duplicateURL
+                return
+            }
+        }
+        urlError = nil
     }
 
     func save(in context: NSManagedObjectContext) async throws {
@@ -88,7 +118,6 @@ class BookmarkFormViewModel: ObservableObject {
         if let pasted = ClipboardService.getFromClipboard(),
            URLValidator.isValidURL(pasted) {
             url = pasted
-            validateURL()
             if title.isEmpty {
                 title = URLValidator.extractDomain(from: URLValidator.normalizeURL(pasted))
             }

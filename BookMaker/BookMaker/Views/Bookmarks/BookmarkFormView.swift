@@ -89,7 +89,7 @@ struct BookmarkFormView: View {
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                         .focused($focusedField, equals: .url)
-                        .onChange(of: viewModel.url) { _, _ in viewModel.validateURL() }
+                        .onChange(of: viewModel.url) { _, _ in viewModel.validateURL(in: viewContext) }
                         .submitLabel(.next)
                         .onSubmit { focusedField = .title }
 
@@ -194,27 +194,36 @@ struct BookmarkFormView: View {
                     }
                 }
 
-                HStack(spacing: AppTheme.Spacing.sm) {
-                    Image(systemName: "tag")
-                        .foregroundColor(AppTheme.Colors.primaryBlue)
-                        .frame(width: 20)
-
-                    TextField(AppStrings.addTags, text: $viewModel.tagInput)
-                        .focused($focusedField, equals: .tagInput)
-                        .submitLabel(.done)
-                        .onSubmit { viewModel.addTag() }
-
-                    if !viewModel.tagInput.isEmpty {
-                        Button(AppStrings.add) { viewModel.addTag() }
-                            .font(AppTheme.Typography.footnote(weight: .semibold))
+                if !viewModel.isTagLimitReached {
+                    HStack(spacing: AppTheme.Spacing.sm) {
+                        Image(systemName: "tag")
                             .foregroundColor(AppTheme.Colors.primaryBlue)
-                    }
-                }
-                .appInputStyle()
+                            .frame(width: 20)
 
-                Text(AppStrings.pressReturnToSaveTag)
+                        TextField(AppStrings.addTags, text: $viewModel.tagInput)
+                            .focused($focusedField, equals: .tagInput)
+                            .submitLabel(.done)
+                            .onSubmit { viewModel.addTag() }
+
+                        if !viewModel.tagInput.isEmpty {
+                            Button(AppStrings.add) { viewModel.addTag() }
+                                .font(AppTheme.Typography.footnote(weight: .semibold))
+                                .foregroundColor(AppTheme.Colors.primaryBlue)
+                        }
+                    }
+                    .appInputStyle()
+
+                    Text(AppStrings.pressReturnToSaveTag)
+                        .font(AppTheme.Typography.caption())
+                        .foregroundColor(AppTheme.Colors.textSecondary)
+                } else {
+                    HStack(spacing: 4) {
+                        Image(systemName: "exclamationmark.circle.fill")
+                        Text(AppStrings.tagLimitReached)
+                    }
                     .font(AppTheme.Typography.caption())
                     .foregroundColor(AppTheme.Colors.textSecondary)
+                }
             }
         }
     }
@@ -238,9 +247,16 @@ struct BookmarkFormView: View {
                 }
                 .appInputStyle()
 
-                Text(AppStrings.visibleWithoutOpening)
-                    .font(AppTheme.Typography.caption())
-                    .foregroundColor(AppTheme.Colors.textSecondary)
+                HStack {
+                    Text(AppStrings.visibleWithoutOpening)
+                    Spacer()
+                    Text("\(viewModel.descriptionRemaining)")
+                        .foregroundColor(viewModel.descriptionRemaining < 50
+                            ? AppTheme.Colors.errorRed
+                            : AppTheme.Colors.textSecondary)
+                }
+                .font(AppTheme.Typography.caption())
+                .foregroundColor(AppTheme.Colors.textSecondary)
             }
         }
     }

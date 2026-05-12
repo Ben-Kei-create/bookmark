@@ -112,6 +112,9 @@ struct AppStrings {
     static var pressReturnToSaveTag: String {
         isJapanese ? "Enterキーまたは追加ボタンでタグを保存" : "Press return or tap Add to save a tag."
     }
+    static var tagLimitReached: String {
+        isJapanese ? "タグは最大10個まで追加できます" : "Maximum 10 tags reached"
+    }
 
     // MARK: - Sort Options
     static var newestFirst: String { isJapanese ? "新しい順" : "Newest First" }
