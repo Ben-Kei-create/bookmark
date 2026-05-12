@@ -18,7 +18,6 @@ class BookmarkFormViewModel: ObservableObject {
     @Published var saveError: String?
     @Published var tags: [String] = []
     @Published var tagInput = ""
-    @Published var folderName = "Unsorted"
 
     let editingEntity: BookmarkEntity?
     let maxTags = 10
@@ -34,7 +33,6 @@ class BookmarkFormViewModel: ObservableObject {
             title = entity.title
             description = entity.descriptionText
             tags = entity.tagList
-            folderName = entity.folderDisplayName
         }
     }
 

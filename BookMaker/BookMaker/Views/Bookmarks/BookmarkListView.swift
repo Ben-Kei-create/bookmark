@@ -16,6 +16,7 @@ struct BookmarkListView: View {
     @State private var sortOption: BookmarkSortOption = .dateCreatedNewest
     @State private var showAddSheet = false
     @State private var filterFavoritesOnly = false
+    @State private var pendingDelete: BookmarkEntity?
 
     // MARK: - Computed
 
@@ -29,7 +30,6 @@ struct BookmarkListView: View {
                 || $0.descriptionText.lowercased().contains(q)
                 || $0.url.lowercased().contains(q)
                 || ($0.tags ?? "").lowercased().contains(q)
-                || ($0.folderName ?? "").lowercased().contains(q)
             }
         }
 
@@ -124,7 +124,23 @@ struct BookmarkListView: View {
             .sheet(isPresented: $showAddSheet) {
                 BookmarkFormView()
             }
+            .alert(AppStrings.deleteBookmark, isPresented: .init(
+                get: { pendingDelete != nil },
+                set: { if !$0 { pendingDelete = nil } }
+            )) {
+                Button(AppStrings.delete, role: .destructive) {
+                    if let bm = pendingDelete { deleteBookmark(bm) }
+                }
+                Button(AppStrings.cancel, role: .cancel) {}
+            } message: {
+                Text("\"\(pendingDelete?.displayTitle ?? "")\"\(AppStrings.willBeRemoved)")
+            }
         }
+    }
+
+    private func deleteBookmark(_ entity: BookmarkEntity) {
+        try? entity.softDelete(in: viewContext)
+        pendingDelete = nil
     }
 
     // MARK: - Filter Chips
@@ -168,6 +184,13 @@ struct BookmarkListView: View {
                         BookmarkGridCell(entity: bookmark)
                     }
                     .buttonStyle(.plain)
+                    .contextMenu {
+                        Button(role: .destructive) {
+                            pendingDelete = bookmark
+                        } label: {
+                            Label(AppStrings.delete, systemImage: "trash")
+                        }
+                    }
                 }
             }
             .padding(.horizontal, AppTheme.Spacing.lg)
@@ -190,6 +213,13 @@ struct BookmarkListView: View {
                                 BookmarkRow(entity: bookmark)
                             }
                             .buttonStyle(.plain)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button(role: .destructive) {
+                                    pendingDelete = bookmark
+                                } label: {
+                                    Label(AppStrings.delete, systemImage: "trash")
+                                }
+                            }
                         }
                     } header: {
                         SectionHeaderLabel(title: group.key)
