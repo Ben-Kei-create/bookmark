@@ -119,12 +119,25 @@ struct BookmarkListView: View {
                     }
                 }) {
                     Text(chip.label)
-                        .font(.subheadline)
+                        .font(.callout)
                         .fontWeight(.medium)
                         .padding(.horizontal, AppTheme.Spacing.md)
-                        .padding(.vertical, AppTheme.Spacing.sm)
-                        .background(chip.isActive ? AppTheme.Colors.primaryBlue : AppTheme.Colors.lightBlue)
+                        .padding(.vertical, AppTheme.Spacing.xs)
+                        .background(
+                            chip.isActive
+                                ? AppTheme.Colors.primaryBlue
+                                : Color.white
+                        )
                         .foregroundColor(chip.isActive ? .white : AppTheme.Colors.primaryBlue)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(
+                                    chip.isActive
+                                        ? Color.clear
+                                        : AppTheme.Colors.lightBlue,
+                                    lineWidth: 1
+                                )
+                        )
                         .clipShape(Capsule())
                 }
             }
