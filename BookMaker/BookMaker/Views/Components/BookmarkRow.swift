@@ -90,7 +90,7 @@ struct BookmarkRow: View {
             .padding(.leading, 62)
         }
         .padding(AppTheme.Spacing.md)
-        .background(Color.white)
+        .background(AppTheme.Colors.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous))
         .shadow(color: Color.black.opacity(0.055), radius: 10, x: 0, y: 3)
     }
