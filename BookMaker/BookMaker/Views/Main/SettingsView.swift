@@ -304,7 +304,6 @@ struct AppearanceModeButton: View {
         Button {
             withAnimation(.easeInOut(duration: 0.2)) {
                 selection = value
-                applyAppIcon()
             }
         } label: {
             Text(label)
@@ -327,11 +326,6 @@ struct AppearanceModeButton: View {
         .buttonStyle(.plain)
     }
 
-    private func applyAppIcon() {
-        guard UIApplication.shared.supportsAlternateIcons else { return }
-        let iconName: String? = value == "dark" ? "AppIcon-Dark" : nil
-        UIApplication.shared.setAlternateIconName(iconName) { _ in }
-    }
 }
 
 // MARK: - Local Helper Components (Settings-scoped)
