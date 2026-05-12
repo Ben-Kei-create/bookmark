@@ -13,39 +13,39 @@ struct BookmarkDetailView: View {
     @State private var urlCopied = false
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
-                headerSection
-                    .padding(.top, 4)
+        ZStack {
+            AppTheme.Colors.paleBackground.ignoresSafeArea()
 
-                if !entity.descriptionText.isEmpty {
-                    descriptionSection
+            ScrollView {
+                VStack(spacing: AppTheme.Spacing.md) {
+                    heroCard
+                    actionRow
+                    if !entity.descriptionText.isEmpty { notesCard }
+                    if !entity.tagList.isEmpty { tagsCard }
+                    metaCard
                 }
-
-                actionButtons
-                    .padding(.top, 4)
-
-                metaSection
+                .padding(.horizontal, AppTheme.Spacing.lg)
+                .padding(.top, AppTheme.Spacing.md)
+                .padding(.bottom, 100)
             }
-            .padding()
         }
-        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button { showEditSheet = true } label: {
-                        Label("Edit", systemImage: "pencil")
+                        Label(AppStrings.edit, systemImage: "pencil")
                     }
                     Button { showShareSheet = true } label: {
-                        Label("Share", systemImage: "square.and.arrow.up")
+                        Label(AppStrings.share, systemImage: "square.and.arrow.up")
                     }
                     Divider()
                     Button(role: .destructive) { showDeleteAlert = true } label: {
-                        Label("Delete", systemImage: "trash")
+                        Label(AppStrings.delete, systemImage: "trash")
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
+                        .foregroundColor(AppTheme.Colors.primaryBlue)
                 }
             }
         }
@@ -56,103 +56,193 @@ struct BookmarkDetailView: View {
             ShareSheet(activityItems: [entity.url])
                 .presentationDetents([.medium, .large])
         }
-        .alert("Delete Bookmark?", isPresented: $showDeleteAlert) {
-            Button("Delete", role: .destructive) { deleteAndDismiss() }
-            Button("Cancel", role: .cancel) {}
+        .alert(AppStrings.deleteBookmark, isPresented: $showDeleteAlert) {
+            Button(AppStrings.delete, role: .destructive) { deleteAndDismiss() }
+            Button(AppStrings.cancel, role: .cancel) {}
         } message: {
-            Text("\"\(entity.title)\" will be removed.")
+            Text("\"\(entity.title)\"\(AppStrings.willBeRemoved)")
         }
     }
 
-    // MARK: - Sections
+    // MARK: - Hero Card
 
-    private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(entity.title)
-                .font(.title2)
-                .fontWeight(.bold)
-                .foregroundColor(.primary)
+    private var heroCard: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.md) {
+            HStack(spacing: AppTheme.Spacing.md) {
+                DomainIconView(domain: entity.domain, size: 56)
 
-            Button { openInSafari() } label: {
-                HStack(spacing: 4) {
-                    Text(URLValidator.extractDomain(from: entity.url))
-                        .font(.subheadline)
-                    Image(systemName: "arrow.up.right.square")
-                        .font(.caption)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(entity.displayTitle)
+                        .font(AppTheme.Typography.title3(weight: .bold))
+                        .foregroundColor(AppTheme.Colors.textPrimary)
+
+                    Button { openInSafari() } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "link")
+                                .font(.system(size: 11))
+                            Text(entity.domain)
+                                .font(AppTheme.Typography.footnote())
+                            Image(systemName: "arrow.up.right")
+                                .font(.system(size: 10))
+                        }
+                        .foregroundColor(AppTheme.Colors.primaryBlue)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .foregroundColor(.accentColor)
+
+                Spacer()
+            }
+
+            if let folder = entity.folderName, folder != "Unsorted" {
+                HStack(spacing: 4) {
+                    Image(systemName: "folder.fill")
+                        .font(.system(size: 11))
+                        .foregroundColor(AppTheme.Colors.primaryBlue)
+                    Text(folder)
+                        .font(AppTheme.Typography.caption(weight: .medium))
+                        .foregroundColor(AppTheme.Colors.textSecondary)
+                }
+            }
+        }
+        .appCardStyle(padding: AppTheme.Spacing.lg)
+    }
+
+    // MARK: - Action Row
+
+    private var actionRow: some View {
+        HStack(spacing: AppTheme.Spacing.sm) {
+            // Open in Safari
+            Button(action: openInSafari) {
+                VStack(spacing: 4) {
+                    Image(systemName: "safari.fill")
+                        .font(.system(size: 20))
+                    Text("Open")
+                        .font(AppTheme.Typography.caption(weight: .semibold))
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 64)
+                .foregroundColor(.white)
+                .background(AppTheme.Gradients.primary)
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
+            }
+            .buttonStyle(.plain)
+
+            // Copy URL
+            Button(action: copyURL) {
+                VStack(spacing: 4) {
+                    Image(systemName: urlCopied ? "checkmark" : "doc.on.doc.fill")
+                        .font(.system(size: 20))
+                    Text(urlCopied ? AppStrings.copied : "Copy")
+                        .font(AppTheme.Typography.caption(weight: .semibold))
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 64)
+                .foregroundColor(AppTheme.Colors.primaryBlue)
+                .background(AppTheme.Colors.lightBlue)
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .animation(.easeInOut(duration: 0.15), value: urlCopied)
+
+            // Share
+            Button { showShareSheet = true } label: {
+                VStack(spacing: 4) {
+                    Image(systemName: "square.and.arrow.up.fill")
+                        .font(.system(size: 20))
+                    Text(AppStrings.share)
+                        .font(AppTheme.Typography.caption(weight: .semibold))
+                }
+                .frame(maxWidth: .infinity)
+                .frame(height: 64)
+                .foregroundColor(AppTheme.Colors.primaryBlue)
+                .background(AppTheme.Colors.lightBlue)
+                .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
             }
             .buttonStyle(.plain)
         }
     }
 
-    private var descriptionSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label("Notes", systemImage: "text.alignleft")
-                .font(.caption)
-                .foregroundColor(.secondary)
+    // MARK: - Notes Card
+
+    private var notesCard: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            Label("Notes", systemImage: "note.text")
+                .font(AppTheme.Typography.caption(weight: .semibold))
+                .foregroundColor(AppTheme.Colors.textSecondary)
 
             Text(entity.descriptionText)
-                .font(.body)
-                .foregroundColor(.primary)
+                .font(AppTheme.Typography.subheadline())
+                .foregroundColor(AppTheme.Colors.textPrimary)
+                .lineSpacing(2)
+                .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color(.secondarySystemGroupedBackground))
-        )
+        .appCardStyle()
     }
 
-    private var actionButtons: some View {
-        VStack(spacing: 10) {
-            Button(action: openInSafari) {
-                Label("Open in Safari", systemImage: "safari.fill")
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-            }
-            .buttonStyle(PrimaryButtonStyle())
+    // MARK: - Tags Card
 
-            HStack(spacing: 10) {
-                Button(action: copyURL) {
-                    Label(urlCopied ? "Copied!" : "Copy URL",
-                          systemImage: urlCopied ? "checkmark" : "doc.on.doc")
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                }
-                .buttonStyle(SecondaryButtonStyle())
-                .animation(.easeInOut(duration: 0.15), value: urlCopied)
+    private var tagsCard: some View {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            Label("Tags", systemImage: "tag.fill")
+                .font(AppTheme.Typography.caption(weight: .semibold))
+                .foregroundColor(AppTheme.Colors.textSecondary)
 
-                Button { showShareSheet = true } label: {
-                    Label("Share", systemImage: "square.and.arrow.up")
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
+            FlowLayout(spacing: AppTheme.Spacing.sm) {
+                ForEach(entity.tagList, id: \.self) { tag in
+                    TagChip(tag: tag)
                 }
-                .buttonStyle(SecondaryButtonStyle())
             }
         }
+        .appCardStyle()
     }
 
-    private var metaSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("Added \(entity.dateCreated.formatted(date: .long, time: .shortened))")
-                .font(.caption)
-                .foregroundColor(.secondary)
+    // MARK: - Meta Card
+
+    private var metaCard: some View {
+        VStack(spacing: 0) {
+            metaRow(icon: "calendar", label: AppStrings.added,
+                    value: entity.dateCreated.formatted(date: .abbreviated, time: .shortened))
 
             if entity.lastModified.timeIntervalSince(entity.dateCreated) > 5 {
-                Text("Edited \(entity.lastModified.formatted(date: .long, time: .shortened))")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                Divider().padding(.leading, 36)
+                metaRow(icon: "pencil", label: AppStrings.edited,
+                        value: entity.lastModified.formatted(date: .abbreviated, time: .shortened))
+            }
+
+            if let lastVisited = entity.lastVisited {
+                Divider().padding(.leading, 36)
+                metaRow(icon: "eye", label: "Last visited",
+                        value: lastVisited.formatted(date: .abbreviated, time: .shortened))
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.top, 8)
+        .appCardStyle()
+    }
+
+    private func metaRow(icon: String, label: String, value: String) -> some View {
+        HStack(spacing: AppTheme.Spacing.sm) {
+            Image(systemName: icon)
+                .font(.system(size: 13))
+                .foregroundColor(AppTheme.Colors.primaryBlue)
+                .frame(width: 20)
+
+            Text(label)
+                .font(AppTheme.Typography.footnote(weight: .semibold))
+                .foregroundColor(AppTheme.Colors.textSecondary)
+
+            Spacer()
+
+            Text(value)
+                .font(AppTheme.Typography.footnote())
+                .foregroundColor(AppTheme.Colors.textSecondary)
+        }
+        .padding(.vertical, AppTheme.Spacing.sm)
     }
 
     // MARK: - Actions
 
     private func openInSafari() {
         guard let url = URL(string: entity.url) else { return }
+        try? entity.recordVisit(in: viewContext)
         UIApplication.shared.open(url)
     }
 
@@ -169,46 +259,19 @@ struct BookmarkDetailView: View {
     }
 }
 
-// MARK: - Button Styles
-
-struct PrimaryButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .fontWeight(.semibold)
-            .background(Color.accentColor.opacity(configuration.isPressed ? 0.8 : 1))
-            .foregroundColor(.white)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .scaleEffect(configuration.isPressed ? 0.98 : 1)
-    }
-}
-
-struct SecondaryButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .background(Color(.secondarySystemGroupedBackground).opacity(configuration.isPressed ? 0.7 : 1))
-            .foregroundColor(.primary)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .scaleEffect(configuration.isPressed ? 0.98 : 1)
-    }
-}
-
-// MARK: - Share Sheet
-
 struct ShareSheet: UIViewControllerRepresentable {
     let activityItems: [Any]
-
     func makeUIViewController(context: Context) -> UIActivityViewController {
         UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
     }
-
     func updateUIViewController(_ uvc: UIActivityViewController, context: Context) {}
 }
 
 #Preview {
     NavigationStack {
-        let context = PersistenceController.preview.container.viewContext
-        let entity = (try! context.fetch(BookmarkEntity.fetchRequest())).first!
+        let ctx = PersistenceController.preview.container.viewContext
+        let entity = (try! ctx.fetch(BookmarkEntity.fetchRequest())).first!
         BookmarkDetailView(entity: entity)
-            .environment(\.managedObjectContext, context)
+            .environment(\.managedObjectContext, ctx)
     }
 }

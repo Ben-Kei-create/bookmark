@@ -1,6 +1,6 @@
 import CoreData
-import Foundation
 import Combine
+import Foundation
 
 @MainActor
 class BookmarkFormViewModel: ObservableObject {
@@ -10,6 +10,9 @@ class BookmarkFormViewModel: ObservableObject {
     @Published var urlError: String?
     @Published var isSaving = false
     @Published var saveError: String?
+    @Published var tags: [String] = []
+    @Published var tagInput = ""
+    @Published var folderName = "Unsorted"
 
     let editingEntity: BookmarkEntity?
 
@@ -19,19 +22,34 @@ class BookmarkFormViewModel: ObservableObject {
             url = entity.url
             title = entity.title
             description = entity.descriptionText
+            tags = entity.tagList
+            folderName = entity.folderDisplayName
         }
+    }
+
+    func addTag() {
+        let trimmed = tagInput.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty, !tags.contains(trimmed) else {
+            tagInput = ""
+            return
+        }
+        tags.append(trimmed)
+        tagInput = ""
+    }
+
+    func removeTag(_ tag: String) {
+        tags.removeAll { $0 == tag }
     }
 
     var isFormValid: Bool {
         URLValidator.isValidURL(url)
     }
 
-    // Suggested title from domain when title is empty
     var titlePlaceholder: String {
         guard url.trimmingCharacters(in: .whitespaces).isEmpty == false,
-              URLValidator.isValidURL(url) else { return "Title" }
+              URLValidator.isValidURL(url) else { return AppStrings.title }
         let domain = URLValidator.extractDomain(from: URLValidator.normalizeURL(url))
-        return domain.isEmpty ? "Title" : domain
+        return domain.isEmpty ? AppStrings.title : domain
     }
 
     func validateURL() {
@@ -39,7 +57,7 @@ class BookmarkFormViewModel: ObservableObject {
         if trimmed.isEmpty {
             urlError = nil
         } else if !URLValidator.isValidURL(trimmed) {
-            urlError = "Enter a valid URL (e.g. apple.com)"
+            urlError = AppStrings.validURLRequired
         } else {
             urlError = nil
         }

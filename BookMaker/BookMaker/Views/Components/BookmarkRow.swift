@@ -3,98 +3,106 @@ import CoreData
 
 struct BookmarkRow: View {
     let entity: BookmarkEntity
+    @Environment(\.managedObjectContext) private var viewContext
+    @State private var isFavorited: Bool
+
+    private static let dateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateStyle = .short
+        return f
+    }()
+
+    init(entity: BookmarkEntity) {
+        self.entity = entity
+        self._isFavorited = State(initialValue: entity.isFavorite)
+    }
 
     var body: some View {
-        HStack(spacing: 14) {
-            domainIcon
-            content
-        }
-        .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(Color(.secondarySystemGroupedBackground))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(Color(.separator).opacity(0.3), lineWidth: 0.5)
-        )
-    }
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
+            // Top row: icon + title/domain + star
+            HStack(alignment: .top, spacing: AppTheme.Spacing.md) {
+                DomainIconView(domain: entity.domain, size: 46)
 
-    private var domainIcon: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(iconBackgroundColor)
-                .frame(width: 42, height: 42)
-            Image(systemName: iconName)
-                .font(.system(size: 18, weight: .medium))
-                .foregroundColor(iconColor)
-        }
-    }
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(entity.displayTitle)
+                        .font(AppTheme.Typography.subheadline(weight: .semibold))
+                        .foregroundColor(AppTheme.Colors.textPrimary)
+                        .lineLimit(1)
 
-    private var content: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(entity.title)
-                .font(.headline)
-                .lineLimit(1)
-                .foregroundColor(.primary)
+                    HStack(spacing: 4) {
+                        Image(systemName: "link")
+                            .font(.system(size: 10))
+                            .foregroundColor(AppTheme.Colors.primaryBlue)
+                        Text(entity.domain)
+                            .font(AppTheme.Typography.caption())
+                            .foregroundColor(AppTheme.Colors.textSecondary)
+                            .lineLimit(1)
+                    }
+                }
 
-            if !entity.descriptionText.isEmpty {
-                Text(entity.descriptionText)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .lineLimit(2)
+                Spacer()
+
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                        try? entity.toggleFavorite(in: viewContext)
+                        isFavorited.toggle()
+                    }
+                } label: {
+                    Image(systemName: isFavorited ? "star.fill" : "star")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(isFavorited ? .yellow : AppTheme.Colors.textSecondary)
+                        .scaleEffect(isFavorited ? 1.1 : 1.0)
+                }
+                .buttonStyle(.plain)
             }
 
-            Label(URLValidator.extractDomain(from: entity.url), systemImage: "link")
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .lineLimit(1)
+            // Description preview
+            if !entity.descriptionText.isEmpty {
+                Text(entity.descriptionText)
+                    .font(AppTheme.Typography.footnote())
+                    .foregroundColor(AppTheme.Colors.textSecondary)
+                    .lineLimit(2)
+                    .padding(.leading, 62)
+            }
+
+            // Tags + date footer
+            HStack(spacing: AppTheme.Spacing.sm) {
+                // Tag chips (max 2)
+                let tags = entity.tagList.prefix(2)
+                if !tags.isEmpty {
+                    ForEach(Array(tags), id: \.self) { tag in
+                        TagChip(tag: tag)
+                    }
+                    if entity.tagList.count > 2 {
+                        Text("+\(entity.tagList.count - 2)")
+                            .font(AppTheme.Typography.caption())
+                            .foregroundColor(AppTheme.Colors.textSecondary)
+                    }
+                }
+
+                Spacer()
+
+                Text(Self.dateFormatter.string(from: entity.dateCreated))
+                    .font(AppTheme.Typography.caption())
+                    .foregroundColor(AppTheme.Colors.textSecondary)
+            }
+            .padding(.leading, 62)
         }
-    }
-
-    // MARK: - Dynamic icon based on domain
-
-    private var domain: String {
-        URLValidator.extractDomain(from: entity.url).lowercased()
-    }
-
-    private var iconName: String {
-        if domain.contains("github") { return "chevron.left.forwardslash.chevron.right" }
-        if domain.contains("youtube") || domain.contains("youtu.be") { return "play.rectangle.fill" }
-        if domain.contains("twitter") || domain.contains("x.com") { return "bird" }
-        if domain.contains("reddit") { return "bubble.left.and.bubble.right" }
-        if domain.contains("apple") || domain.contains("developer.apple") { return "apple.logo" }
-        if domain.contains("medium") || domain.contains("blog") { return "text.alignleft" }
-        if domain.contains("amazon") || domain.contains("shop") { return "cart" }
-        if domain.contains("news") || domain.contains("nikkei") || domain.contains("cnn") { return "newspaper" }
-        return "globe"
-    }
-
-    private var iconBackgroundColor: Color {
-        if domain.contains("github") { return Color(.systemGray5) }
-        if domain.contains("youtube") { return Color.red.opacity(0.12) }
-        if domain.contains("twitter") || domain.contains("x.com") { return Color.blue.opacity(0.12) }
-        if domain.contains("apple") { return Color(.systemGray5) }
-        return Color.accentColor.opacity(0.1)
-    }
-
-    private var iconColor: Color {
-        if domain.contains("youtube") { return .red }
-        if domain.contains("twitter") || domain.contains("x.com") { return .blue }
-        if domain.contains("github") { return Color(.label) }
-        if domain.contains("apple") { return Color(.label) }
-        return .accentColor
+        .padding(AppTheme.Spacing.md)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.lg, style: .continuous))
+        .shadow(color: Color.black.opacity(0.055), radius: 10, x: 0, y: 3)
     }
 }
 
 #Preview {
-    VStack(spacing: 8) {
+    VStack(spacing: AppTheme.Spacing.md) {
         BookmarkRow(entity: {
             let ctx = PersistenceController.preview.container.viewContext
             return (try! ctx.fetch(BookmarkEntity.fetchRequest())).first!
         }())
     }
-    .padding()
-    .background(Color(.systemGroupedBackground))
+    .padding(AppTheme.Spacing.lg)
+    .background(AppTheme.Colors.paleBackground)
     .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
 }

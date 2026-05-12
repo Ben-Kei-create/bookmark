@@ -4,7 +4,6 @@ import CoreData
 struct BookmarkListView: View {
     @Environment(\.managedObjectContext) private var viewContext
 
-    // Always fetch by creation date; in-memory sort handles other orders
     @FetchRequest(
         sortDescriptors: [SortDescriptor(\.dateCreated, order: .reverse)],
         predicate: NSPredicate(format: "isArchived == false")
@@ -14,40 +13,100 @@ struct BookmarkListView: View {
     @State private var searchText = ""
     @State private var sortOption: BookmarkSortOption = .dateCreatedNewest
     @State private var showAddSheet = false
+    @State private var filterFavoritesOnly = false
+
+    // MARK: - Computed
 
     private var displayBookmarks: [BookmarkEntity] {
-        let filtered: [BookmarkEntity]
-        if searchText.isEmpty {
-            filtered = Array(allBookmarks)
-        } else {
-            let query = searchText.lowercased()
-            filtered = allBookmarks.filter {
-                $0.title.lowercased().contains(query)
-                || $0.descriptionText.lowercased().contains(query)
-                || $0.url.lowercased().contains(query)
+        var result = Array(allBookmarks)
+
+        if !searchText.isEmpty {
+            let q = searchText.lowercased()
+            result = result.filter {
+                $0.title.lowercased().contains(q)
+                || $0.descriptionText.lowercased().contains(q)
+                || $0.url.lowercased().contains(q)
+                || ($0.tags ?? "").lowercased().contains(q)
+                || ($0.folderName ?? "").lowercased().contains(q)
             }
         }
-        return sorted(filtered)
+
+        if filterFavoritesOnly {
+            result = result.filter { $0.isFavorite }
+        }
+
+        return sorted(result)
     }
+
+    private var groupedBookmarks: [(key: String, items: [BookmarkEntity])] {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+        let yesterday = cal.date(byAdding: .day, value: -1, to: today)!
+
+        var groups: [String: [BookmarkEntity]] = [:]
+        for bm in displayBookmarks {
+            let day = cal.startOfDay(for: bm.dateCreated)
+            let key: String
+            if day == today       { key = AppStrings.today }
+            else if day == yesterday { key = AppStrings.yesterday }
+            else                  { key = AppStrings.earlier }
+
+            groups[key, default: []].append(bm)
+        }
+
+        return [AppStrings.today, AppStrings.yesterday, AppStrings.earlier]
+            .compactMap { key in groups[key].map { (key: key, items: $0) } }
+    }
+
+    // MARK: - Body
 
     var body: some View {
         NavigationStack {
-            Group {
+            ZStack {
+                AppTheme.Colors.paleBackground.ignoresSafeArea()
+
                 if allBookmarks.isEmpty {
                     EmptyStateView { showAddSheet = true }
-                } else if displayBookmarks.isEmpty {
-                    ContentUnavailableView.search(text: searchText)
                 } else {
-                    bookmarkList
+                    VStack(spacing: 0) {
+                        // Search + filter bar
+                        VStack(spacing: AppTheme.Spacing.sm) {
+                            SearchBarView(
+                                text: $searchText,
+                                placeholder: AppStrings.searchPlaceholder
+                            )
+
+                            filterChips
+                        }
+                        .padding(.horizontal, AppTheme.Spacing.lg)
+                        .padding(.vertical, AppTheme.Spacing.md)
+                        .background(AppTheme.Colors.paleBackground)
+
+                        if displayBookmarks.isEmpty {
+                            Spacer()
+                            ContentUnavailableView.search(text: searchText)
+                            Spacer()
+                        } else {
+                            bookmarkList
+                        }
+                    }
                 }
             }
-            .navigationTitle("Bookmarks")
-            .searchable(text: $searchText, prompt: "Search bookmarks…")
+            .navigationTitle(AppStrings.bookmarks)
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button { showAddSheet = true } label: {
-                        Image(systemName: "plus")
-                            .fontWeight(.semibold)
+                    Button {
+                        showAddSheet = true
+                    } label: {
+                        ZStack {
+                            Circle()
+                                .fill(AppTheme.Colors.primaryBlue)
+                                .frame(width: 32, height: 32)
+                            Image(systemName: "plus")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(.white)
+                        }
                     }
                 }
                 ToolbarItem(placement: .topBarLeading) {
@@ -60,46 +119,60 @@ struct BookmarkListView: View {
         }
     }
 
-    // MARK: - List
+    // MARK: - Filter Chips
 
-    private var bookmarkList: some View {
-        List {
-            ForEach(displayBookmarks) { bookmark in
-                NavigationLink {
-                    BookmarkDetailView(entity: bookmark)
-                } label: {
-                    BookmarkRow(entity: bookmark)
-                }
-                .listRowInsets(EdgeInsets(top: 5, leading: 16, bottom: 5, trailing: 16))
-                .listRowSeparator(.hidden)
-                .listRowBackground(Color.clear)
-                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                    Button(role: .destructive) { delete(bookmark) } label: {
-                        Label("Delete", systemImage: "trash")
+    private var filterChips: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: AppTheme.Spacing.sm) {
+                FilterChip(
+                    label: AppStrings.all,
+                    isSelected: !filterFavoritesOnly
+                ) {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        filterFavoritesOnly = false
                     }
                 }
-                .swipeActions(edge: .leading) {
-                    Button { open(bookmark.url) } label: {
-                        Label("Open", systemImage: "safari")
-                    }
-                    .tint(.blue)
-                }
-                .contextMenu {
-                    Button { open(bookmark.url) } label: {
-                        Label("Open in Safari", systemImage: "safari")
-                    }
-                    Button { ClipboardService.copyToClipboard(bookmark.url) } label: {
-                        Label("Copy URL", systemImage: "doc.on.doc")
-                    }
-                    Divider()
-                    Button(role: .destructive) { delete(bookmark) } label: {
-                        Label("Delete", systemImage: "trash")
+
+                FilterChip(
+                    label: AppStrings.favorites,
+                    isSelected: filterFavoritesOnly
+                ) {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        filterFavoritesOnly = true
                     }
                 }
             }
         }
-        .listStyle(.plain)
-        .animation(.easeInOut(duration: 0.2), value: displayBookmarks.map(\.objectID))
+    }
+
+    // MARK: - List
+
+    private var bookmarkList: some View {
+        ScrollView {
+            LazyVStack(spacing: AppTheme.Spacing.lg, pinnedViews: .sectionHeaders) {
+                ForEach(groupedBookmarks, id: \.key) { group in
+                    Section {
+                        ForEach(group.items) { bookmark in
+                            NavigationLink {
+                                BookmarkDetailView(entity: bookmark)
+                            } label: {
+                                BookmarkRow(entity: bookmark)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    } header: {
+                        SectionHeaderLabel(title: group.key)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, AppTheme.Spacing.lg)
+                            .padding(.vertical, AppTheme.Spacing.xs)
+                            .background(AppTheme.Colors.paleBackground)
+                    }
+                }
+            }
+            .padding(.horizontal, AppTheme.Spacing.lg)
+            .padding(.top, AppTheme.Spacing.xs)
+            .padding(.bottom, 100)
+        }
     }
 
     // MARK: - Sort Menu
@@ -108,43 +181,29 @@ struct BookmarkListView: View {
         Menu {
             ForEach(BookmarkSortOption.allCases) { option in
                 Button {
-                    withAnimation(.easeInOut) { sortOption = option }
+                    withAnimation { sortOption = option }
                 } label: {
-                    HStack {
-                        Label(option.rawValue, systemImage: option.icon)
-                        if sortOption == option {
-                            Spacer()
-                            Image(systemName: "checkmark")
-                        }
+                    Label(option.rawValue, systemImage: option.icon)
+                    if sortOption == option {
+                        Image(systemName: "checkmark")
                     }
                 }
             }
         } label: {
             Image(systemName: "arrow.up.arrow.down")
-                .fontWeight(.medium)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(AppTheme.Colors.primaryBlue)
         }
     }
 
-    // MARK: - Helpers
+    // MARK: - Sort Helper
 
     private func sorted(_ bookmarks: [BookmarkEntity]) -> [BookmarkEntity] {
         switch sortOption {
         case .dateCreatedNewest: return bookmarks.sorted { $0.dateCreated > $1.dateCreated }
         case .dateCreatedOldest: return bookmarks.sorted { $0.dateCreated < $1.dateCreated }
-        case .alphabetical: return bookmarks.sorted { $0.title.lowercased() < $1.title.lowercased() }
-        case .lastModified: return bookmarks.sorted { $0.lastModified > $1.lastModified }
-        }
-    }
-
-    private func delete(_ entity: BookmarkEntity) {
-        withAnimation {
-            try? BookmarkService.delete(entity, in: viewContext)
-        }
-    }
-
-    private func open(_ urlString: String) {
-        if let url = URL(string: urlString) {
-            UIApplication.shared.open(url)
+        case .alphabetical:      return bookmarks.sorted { $0.title.lowercased() < $1.title.lowercased() }
+        case .lastModified:      return bookmarks.sorted { $0.lastModified > $1.lastModified }
         }
     }
 }
