@@ -90,6 +90,18 @@ struct AppStrings {
             : "Tip: Tap ⭐ on any bookmark to mark it as a favorite."
     }
 
+    // MARK: - Privacy & Form
+    static var privateSecure: String { isJapanese ? "プライベート・セキュア" : "Private & Secure" }
+    static var bookmarksStayOnDevice: String {
+        isJapanese ? "すべてのブックマークはデバイスに保存されます。" : "Your bookmarks stay on your device."
+    }
+    static var folder: String { isJapanese ? "フォルダ" : "Folder" }
+    static var addTags: String { isJapanese ? "タグを追加…" : "Add tags…" }
+    static var add: String { isJapanese ? "追加" : "Add" }
+    static var pressReturnToSaveTag: String {
+        isJapanese ? "Enterキーまたは追加ボタンでタグを保存" : "Press return or tap Add to save a tag."
+    }
+
     // MARK: - Sort Options
     static var newestFirst: String { isJapanese ? "最新順" : "Newest First" }
     static var oldestFirst: String { isJapanese ? "最古順" : "Oldest First" }

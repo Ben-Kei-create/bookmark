@@ -184,9 +184,12 @@ struct BookmarkListView: View {
                 Button {
                     withAnimation { sortOption = option }
                 } label: {
-                    Label(option.displayName, systemImage: option.icon)
-                    if sortOption == option {
-                        Image(systemName: "checkmark")
+                    HStack {
+                        Text(option.displayName)
+                        Spacer()
+                        if sortOption == option {
+                            Image(systemName: "checkmark")
+                        }
                     }
                 }
             }

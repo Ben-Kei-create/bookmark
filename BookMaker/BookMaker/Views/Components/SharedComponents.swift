@@ -187,6 +187,8 @@ struct SectionLabel: View {
 // MARK: - PrivacyInfoCard
 
 struct PrivacyInfoCard: View {
+    @AppStorage("appLanguage") private var appLanguage = "en"
+
     var body: some View {
         HStack(spacing: AppTheme.Spacing.md) {
             ZStack {
@@ -199,10 +201,10 @@ struct PrivacyInfoCard: View {
             }
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("Private & Secure")
+                Text(AppStrings.privateSecure)
                     .font(AppTheme.Typography.footnote(weight: .semibold))
                     .foregroundColor(AppTheme.Colors.textPrimary)
-                Text("Your bookmarks stay on your device.")
+                Text(AppStrings.bookmarksStayOnDevice)
                     .font(AppTheme.Typography.caption())
                     .foregroundColor(AppTheme.Colors.textSecondary)
             }

@@ -192,7 +192,7 @@ struct SettingsView: View {
 
     private func settingsPickerRow(icon: String, iconColor: Color, label: String,
                                    selection: Binding<String>, options: [(String, String)]) -> some View {
-        HStack {
+        HStack(spacing: AppTheme.Spacing.md) {
             SettingsIcon(name: icon, color: iconColor)
             Picker(label, selection: selection) {
                 ForEach(options, id: \.1) { opt in
@@ -200,6 +200,7 @@ struct SettingsView: View {
                 }
             }
             .tint(AppTheme.Colors.primaryBlue)
+            Spacer()
         }
         .padding(AppTheme.Spacing.md)
     }

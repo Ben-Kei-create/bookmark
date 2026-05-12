@@ -162,7 +162,7 @@ struct BookmarkFormView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 1) {
-                    Text("Folder")
+                    Text(AppStrings.folder)
                         .font(AppTheme.Typography.footnote(weight: .semibold))
                         .foregroundColor(AppTheme.Colors.textPrimary)
                     Text(viewModel.folderName.isEmpty ? "Unsorted" : viewModel.folderName)
@@ -199,20 +199,20 @@ struct BookmarkFormView: View {
                         .foregroundColor(AppTheme.Colors.primaryBlue)
                         .frame(width: 20)
 
-                    TextField("Add tags…", text: $viewModel.tagInput)
+                    TextField(AppStrings.addTags, text: $viewModel.tagInput)
                         .focused($focusedField, equals: .tagInput)
                         .submitLabel(.done)
                         .onSubmit { viewModel.addTag() }
 
                     if !viewModel.tagInput.isEmpty {
-                        Button("Add") { viewModel.addTag() }
+                        Button(AppStrings.add) { viewModel.addTag() }
                             .font(AppTheme.Typography.footnote(weight: .semibold))
                             .foregroundColor(AppTheme.Colors.primaryBlue)
                     }
                 }
                 .appInputStyle()
 
-                Text("Press return or tap Add to save a tag.")
+                Text(AppStrings.pressReturnToSaveTag)
                     .font(AppTheme.Typography.caption())
                     .foregroundColor(AppTheme.Colors.textSecondary)
             }
