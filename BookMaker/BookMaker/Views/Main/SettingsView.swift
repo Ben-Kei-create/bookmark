@@ -1,11 +1,21 @@
 import SwiftUI
+import CoreData
 
 struct SettingsView: View {
+    @Environment(\.managedObjectContext) private var viewContext
+    @FetchRequest(
+        sortDescriptors: [SortDescriptor(\.dateCreated, order: .reverse)],
+        predicate: NSPredicate(format: "isArchived == false")
+    )
+    private var allBookmarks: FetchedResults<BookmarkEntity>
+
     @AppStorage("appLanguage") private var appLanguage = "en"
     @AppStorage("bookmarkLayout") private var bookmarkLayout = "list"
     @AppStorage("colorScheme") private var colorScheme = "system"
     @State private var showClearAlert = false
     @State private var openLinksIn = "Safari"
+    @State private var showExportSheet = false
+    @State private var exportFileURL: URL?
 
     var body: some View {
         NavigationStack {
@@ -33,7 +43,49 @@ struct SettingsView: View {
             } message: {
                 Text(AppStrings.clearAllConfirmMessage)
             }
+            .sheet(isPresented: $showExportSheet) {
+                if let url = exportFileURL {
+                    ShareSheet(items: [url])
+                }
+            }
         }
+    }
+
+    // MARK: - Export
+
+    private func exportBookmarks() {
+        struct ExportItem: Codable {
+            let url: String
+            let title: String
+            let description: String
+            let folder: String
+            let tags: [String]
+            let isFavorite: Bool
+            let dateCreated: String
+        }
+
+        let formatter = ISO8601DateFormatter()
+        let items = allBookmarks.map { bm in
+            ExportItem(
+                url: bm.url,
+                title: bm.title,
+                description: bm.descriptionText,
+                folder: bm.folderName ?? "Unsorted",
+                tags: bm.tagList,
+                isFavorite: bm.isFavorite,
+                dateCreated: formatter.string(from: bm.dateCreated)
+            )
+        }
+
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        guard let data = try? encoder.encode(items) else { return }
+
+        let tempURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("bookmarks_export.json")
+        try? data.write(to: tempURL)
+        exportFileURL = tempURL
+        showExportSheet = true
     }
 
     // MARK: - App Header Card
@@ -148,10 +200,9 @@ struct SettingsView: View {
         SettingsGroupCard(title: AppStrings.dataSection) {
             VStack(spacing: 0) {
                 settingsActionRow(icon: "square.and.arrow.up", iconColor: Color.indigo,
-                                  label: AppStrings.exportBookmarks) { }
-                SettingsDivider()
-                settingsActionRow(icon: "square.and.arrow.down", iconColor: Color.teal,
-                                  label: AppStrings.importBookmarks) { }
+                                  label: AppStrings.exportBookmarks) {
+                    exportBookmarks()
+                }
                 SettingsDivider()
                 settingsActionRow(icon: "trash.fill", iconColor: Color.red,
                                   label: AppStrings.clearAllBookmarks, isDestructive: true) {
@@ -329,6 +380,19 @@ struct SettingsDivider: View {
     }
 }
 
+// MARK: - ShareSheet
+
+struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
 #Preview {
     SettingsView()
+        .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
 }
