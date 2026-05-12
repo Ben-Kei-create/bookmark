@@ -20,7 +20,6 @@ struct EmptyStateView: View {
 
                 VStack(spacing: AppTheme.Spacing.sm) {
                     PrimaryGradientButton(AppStrings.addYourFirstBookmark, icon: "plus", action: action)
-                    tipCard
                 }
                 .opacity(appeared ? 1 : 0)
                 .offset(y: appeared ? 0 : 16)
@@ -106,21 +105,6 @@ struct EmptyStateView: View {
     }
 
     // MARK: - Tip
-
-    private var tipCard: some View {
-        HStack(spacing: AppTheme.Spacing.sm) {
-            Image(systemName: "lightbulb.fill")
-                .font(.system(size: 13))
-                .foregroundColor(AppTheme.Colors.primaryBlue)
-            Text(AppStrings.emptyTip)
-                .font(AppTheme.Typography.caption(weight: .medium))
-                .foregroundColor(AppTheme.Colors.textSecondary)
-            Spacer()
-        }
-        .padding(AppTheme.Spacing.md)
-        .background(AppTheme.Colors.lightBlue.opacity(0.5))
-        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Radius.md, style: .continuous))
-    }
 }
 
 #Preview {
