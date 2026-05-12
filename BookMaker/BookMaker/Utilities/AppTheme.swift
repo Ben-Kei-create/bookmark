@@ -14,12 +14,12 @@ struct AppTheme {
         // Dynamic colors
         static let lightBlue = Color(UIColor { t in
             t.userInterfaceStyle == .dark
-                ? UIColor(red: 0.10, green: 0.18, blue: 0.30, alpha: 1)   // dark tint
+                ? UIColor(red: 0.16, green: 0.35, blue: 0.65, alpha: 1)   // vibrant light blue for dark mode
                 : UIColor(red: 0.90, green: 0.95, blue: 1.00, alpha: 1)   // #E6F3FF
         })
         static let paleBackground = Color(UIColor { t in
             t.userInterfaceStyle == .dark
-                ? UIColor(red: 0.06, green: 0.06, blue: 0.07, alpha: 1)   // #0F0F12
+                ? UIColor(red: 0.07, green: 0.10, blue: 0.16, alpha: 1)   // lighter blue-tinted dark
                 : UIColor(red: 0.96, green: 0.98, blue: 1.00, alpha: 1)   // #F5FAFF
         })
         static let textPrimary = Color(UIColor { t in
@@ -29,17 +29,17 @@ struct AppTheme {
         })
         static let textSecondary = Color(UIColor { t in
             t.userInterfaceStyle == .dark
-                ? UIColor(red: 0.56, green: 0.56, blue: 0.58, alpha: 1)   // #8E8E93
+                ? UIColor(red: 0.62, green: 0.68, blue: 0.78, alpha: 1)   // lighter for better contrast
                 : UIColor(red: 0.54, green: 0.56, blue: 0.60, alpha: 1)   // #8A8F98
         })
         static let cardBackground = Color(UIColor { t in
             t.userInterfaceStyle == .dark
-                ? UIColor(red: 0.11, green: 0.11, blue: 0.12, alpha: 1)   // #1C1C1E
+                ? UIColor(red: 0.10, green: 0.13, blue: 0.20, alpha: 1)   // lighter blue-tinted dark
                 : UIColor.white
         })
         static let divider = Color(UIColor { t in
             t.userInterfaceStyle == .dark
-                ? UIColor(red: 0.17, green: 0.17, blue: 0.18, alpha: 1)   // #2C2C2E
+                ? UIColor(red: 0.18, green: 0.23, blue: 0.32, alpha: 1)   // lighter blue-tinted divider
                 : UIColor(red: 0.93, green: 0.94, blue: 0.96, alpha: 1)
         })
     }
