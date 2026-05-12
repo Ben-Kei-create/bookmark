@@ -5,12 +5,12 @@ struct SettingsView: View {
     @AppStorage("appLanguage") private var appLanguage = "en"
     @State private var showClearAlert = false
     @State private var openLinksIn = "Safari"
-    
+
     var body: some View {
         NavigationStack {
             ZStack {
                 AppTheme.Colors.paleBackground.ignoresSafeArea()
-                
+
                 ScrollView {
                     VStack(spacing: AppTheme.Spacing.xl) {
                         appHeader
@@ -34,9 +34,9 @@ struct SettingsView: View {
             }
         }
     }
-    
+
     // MARK: - App Header Card
-    
+
     private var appHeader: some View {
         HStack(spacing: AppTheme.Spacing.md) {
             ZStack {
@@ -47,7 +47,7 @@ struct SettingsView: View {
                     .font(.system(size: 26))
                     .foregroundColor(.white)
             }
-            
+
             VStack(alignment: .leading, spacing: 2) {
                 Text("BookMaker")
                     .font(AppTheme.Typography.title3(weight: .bold))
@@ -56,14 +56,14 @@ struct SettingsView: View {
                     .font(AppTheme.Typography.caption())
                     .foregroundColor(AppTheme.Colors.textSecondary)
             }
-            
+
             Spacer()
         }
         .appCardStyle(padding: AppTheme.Spacing.md)
     }
-    
+
     // MARK: - General
-    
+
     private var generalSection: some View {
         SettingsGroupCard(title: AppStrings.generalSection) {
             VStack(spacing: 0) {
@@ -83,9 +83,9 @@ struct SettingsView: View {
             }
         }
     }
-    
+
     // MARK: - Appearance
-    
+
     private var appearanceSection: some View {
         SettingsGroupCard(title: AppStrings.appearanceSection) {
             VStack(alignment: .leading, spacing: AppTheme.Spacing.sm) {
@@ -96,7 +96,7 @@ struct SettingsView: View {
                         .foregroundColor(AppTheme.Colors.textPrimary)
                     Spacer()
                 }
-                
+
                 Picker(AppStrings.languageLabel, selection: $appLanguage) {
                     Text(AppStrings.english).tag("en")
                     Text(AppStrings.japanese).tag("ja")
@@ -106,9 +106,9 @@ struct SettingsView: View {
             .padding(AppTheme.Spacing.md)
         }
     }
-    
+
     // MARK: - Data
-    
+
     private var dataSection: some View {
         SettingsGroupCard(title: AppStrings.dataSection) {
             VStack(spacing: 0) {
@@ -125,9 +125,9 @@ struct SettingsView: View {
             }
         }
     }
-    
+
     // MARK: - About
-    
+
     private var aboutSection: some View {
         SettingsGroupCard(title: AppStrings.about) {
             VStack(spacing: 0) {
@@ -142,9 +142,9 @@ struct SettingsView: View {
                         .foregroundColor(AppTheme.Colors.textSecondary)
                 }
                 .padding(AppTheme.Spacing.md)
-                
+
                 SettingsDivider()
-                
+
                 if let mailto = URL(string: "mailto:support@example.com") {
                     Link(destination: mailto) {
                         HStack {
@@ -160,17 +160,17 @@ struct SettingsView: View {
                         .padding(AppTheme.Spacing.md)
                     }
                 }
-                
+
                 SettingsDivider()
-                
+
                 settingsActionRow(icon: "hand.raised.fill", iconColor: Color.purple,
                                   label: AppStrings.privacyPolicy) { }
             }
         }
     }
-    
+
     // MARK: - Reusable Row Builders
-    
+
     private func settingsActionRow(icon: String, iconColor: Color, label: String,
                                    isDestructive: Bool = false, action: @escaping () -> Void) -> some View {
         Button(action: action) {
@@ -188,7 +188,7 @@ struct SettingsView: View {
         }
         .buttonStyle(.plain)
     }
-    
+
     private func settingsPickerRow(icon: String, iconColor: Color, label: String,
                                    selection: Binding<String>, options: [(String, String)]) -> some View {
         HStack(spacing: AppTheme.Spacing.md) {
@@ -227,30 +227,30 @@ struct SettingsGroupCard<Content: View>: View {
                 .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
         }
     }
-    
-    struct SettingsIcon: View {
-        let name: String
-        let color: Color
-        
-        var body: some View {
-            ZStack {
-                RoundedRectangle(cornerRadius: 7, style: .continuous)
-                    .fill(color)
-                    .frame(width: 30, height: 30)
-                Image(systemName: name)
-                    .font(.system(size: 14))
-                    .foregroundColor(.white)
-            }
+}
+
+struct SettingsIcon: View {
+    let name: String
+    let color: Color
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                .fill(color)
+                .frame(width: 30, height: 30)
+            Image(systemName: name)
+                .font(.system(size: 14))
+                .foregroundColor(.white)
         }
     }
-    
-    struct SettingsDivider: View {
-        var body: some View {
-            Divider().padding(.leading, 50)
-        }
+}
+
+struct SettingsDivider: View {
+    var body: some View {
+        Divider().padding(.leading, 50)
     }
-    
-    #Preview {
-        SettingsView()
-    }
+}
+
+#Preview {
+    SettingsView()
 }
