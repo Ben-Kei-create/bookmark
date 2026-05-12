@@ -97,21 +97,25 @@ struct BookmarkListView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showAddSheet = true
-                    } label: {
-                        ZStack {
-                            Circle()
-                                .fill(AppTheme.Colors.primaryBlue)
-                                .frame(width: 32, height: 32)
-                            Image(systemName: "plus")
-                                .font(.system(size: 14, weight: .bold))
-                                .foregroundColor(.white)
+                    if !allBookmarks.isEmpty {
+                        Button {
+                            showAddSheet = true
+                        } label: {
+                            ZStack {
+                                Circle()
+                                    .fill(AppTheme.Colors.primaryBlue)
+                                    .frame(width: 32, height: 32)
+                                Image(systemName: "plus")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundColor(.white)
+                            }
                         }
                     }
                 }
                 ToolbarItem(placement: .topBarLeading) {
-                    sortMenu
+                    if !allBookmarks.isEmpty {
+                        sortMenu
+                    }
                 }
             }
             .sheet(isPresented: $showAddSheet) {
