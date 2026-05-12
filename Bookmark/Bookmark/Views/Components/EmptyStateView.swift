@@ -7,40 +7,53 @@ struct EmptyStateView: View {
         VStack(spacing: 0) {
             Spacer()
 
-            VStack(spacing: 20) {
+            VStack(spacing: AppTheme.Spacing.lg) {
                 ZStack {
                     Circle()
-                        .fill(Color.accentColor.opacity(0.12))
-                        .frame(width: 90, height: 90)
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    AppTheme.Colors.primaryBlue.opacity(0.15),
+                                    AppTheme.Colors.deepBlue.opacity(0.08)
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: 100, height: 100)
+
                     Image(systemName: "bookmark.fill")
-                        .font(.system(size: 38))
-                        .foregroundStyle(Color.accentColor)
+                        .font(.system(size: 44))
+                        .foregroundColor(AppTheme.Colors.primaryBlue)
                 }
 
-                VStack(spacing: 6) {
-                    Text("No Bookmarks")
+                VStack(spacing: AppTheme.Spacing.sm) {
+                    Text(AppStrings.noBookmarks)
                         .font(.title2)
                         .fontWeight(.bold)
+                        .foregroundColor(AppTheme.Colors.textPrimary)
 
-                    Text("Save your favorite sites to access them anytime.")
+                    Text(AppStrings.noBookmarksDescription)
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(AppTheme.Colors.textSecondary)
                         .multilineTextAlignment(.center)
-                        .padding(.horizontal, 40)
+                        .padding(.horizontal, AppTheme.Spacing.xl)
                 }
             }
 
-            Spacer().frame(height: 32)
+            Spacer().frame(height: AppTheme.Spacing.xxl)
 
             Button(action: action) {
-                Label("Add Your First Bookmark", systemImage: "plus.circle.fill")
-                    .font(.headline)
-                    .frame(maxWidth: 280)
-                    .padding(.vertical, 14)
-                    .background(Color.accentColor)
-                    .foregroundColor(.white)
-                    .clipShape(Capsule())
+                HStack {
+                    Image(systemName: "plus.circle.fill")
+                    Text(AppStrings.addYourFirstBookmark)
+                }
+                .font(.headline)
+                .fontWeight(.semibold)
+                .frame(maxWidth: 280)
+                .padding(.vertical, AppTheme.Spacing.md)
             }
+            .appPrimaryButtonStyle()
             .buttonStyle(.plain)
 
             Spacer()
@@ -51,4 +64,5 @@ struct EmptyStateView: View {
 
 #Preview {
     EmptyStateView {}
+        .background(AppTheme.Colors.paleBackground)
 }

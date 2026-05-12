@@ -2,38 +2,53 @@ import SwiftUI
 
 struct SettingsView: View {
     @AppStorage("defaultSortOption") private var defaultSortKey = BookmarkSortOption.dateCreatedNewest.rawValue
+    @AppStorage("appLanguage") private var appLanguage = "en"
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section {
-                    Picker("Default Sort", selection: $defaultSortKey) {
-                        ForEach(BookmarkSortOption.allCases) { option in
-                            Label(option.rawValue, systemImage: option.icon).tag(option.rawValue)
-                        }
-                    }
-                } header: {
-                    Text("Preferences")
-                }
+            ZStack {
+                AppTheme.Colors.paleBackground
+                    .ignoresSafeArea()
 
-                Section {
-                    HStack {
-                        Text("Version")
-                        Spacer()
-                        Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0")
-                            .foregroundColor(.secondary)
+                Form {
+                    Section {
+                        Picker(AppStrings.language, selection: $appLanguage) {
+                            Text(AppStrings.english).tag("en")
+                            Text(AppStrings.japanese).tag("ja")
+                        }
+                        .pickerStyle(.segmented)
+                    } header: {
+                        Text(AppStrings.preferences)
                     }
 
-                    if let url = URL(string: "mailto:support@example.com") {
-                        Link(destination: url) {
-                            Label("Contact Support", systemImage: "envelope")
+                    Section {
+                        Picker(AppStrings.defaultSort, selection: $defaultSortKey) {
+                            ForEach(BookmarkSortOption.allCases) { option in
+                                Label(option.rawValue, systemImage: option.icon).tag(option.rawValue)
+                            }
                         }
                     }
-                } header: {
-                    Text("About")
+
+                    Section {
+                        HStack {
+                            Text(AppStrings.version)
+                            Spacer()
+                            Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0")
+                                .foregroundColor(AppTheme.Colors.textSecondary)
+                        }
+
+                        if let url = URL(string: "mailto:support@example.com") {
+                            Link(destination: url) {
+                                Label(AppStrings.contactSupport, systemImage: "envelope")
+                            }
+                        }
+                    } header: {
+                        Text(AppStrings.about)
+                    }
                 }
+                .scrollContentBackground(.hidden)
             }
-            .navigationTitle("Settings")
+            .navigationTitle(AppStrings.settings)
         }
     }
 }

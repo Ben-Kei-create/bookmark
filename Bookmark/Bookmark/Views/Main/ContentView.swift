@@ -6,14 +6,15 @@ struct ContentView: View {
         TabView {
             BookmarkListView()
                 .tabItem {
-                    Label("Bookmarks", systemImage: "bookmark.fill")
+                    Label(AppStrings.bookmarks, systemImage: "bookmark.fill")
                 }
 
             SettingsView()
                 .tabItem {
-                    Label("Settings", systemImage: "gear")
+                    Label(AppStrings.settings, systemImage: "gear")
                 }
         }
+        .tint(AppTheme.Colors.primaryBlue)
     }
 }
 
